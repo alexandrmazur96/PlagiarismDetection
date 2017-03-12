@@ -1,0 +1,55 @@
+﻿<Page
+    x:Class="DocumentAdder.View.SettingsViews.DatabaseSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:custom="clr-namespace:DocumentAdder.Helpers"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:local="clr-namespace:DocumentAdder.View.SettingsViews"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:DocumentAdder.ViewModel.SettingsViewModels"
+    Title="DatabaseSettingsView"
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <vm:DatabaseSettingViewModel />
+    </Page.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0">
+            <TextBlock Margin="10,10,0,0" VerticalAlignment="Top">Строка подключения к БД:</TextBlock>
+            <TextBox
+                Margin="10,5,10,0"
+                VerticalAlignment="Top"
+                Text="{Binding Path=DatabaseModel.ConnectionString}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock MinWidth="70" Margin="10">Логин:</TextBlock>
+                <TextBox
+                    MinWidth="150"
+                    Margin="10"
+                    HorizontalAlignment="Stretch"
+                    Text="{Binding Path=DatabaseModel.Login}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock MinWidth="70" Margin="10">Пароль</TextBlock>
+                <PasswordBox MinWidth="150" Margin="10">
+                    <i:Interaction.Behaviors>
+                        <custom:PasswordBehavior Password="{Binding Path=DatabaseModel.Password, Mode=TwoWay}" />
+                    </i:Interaction.Behaviors>
+                </PasswordBox>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="2">
+            <TextBlock MinWidth="150" Margin="10">Имя базы данных</TextBlock>
+            <TextBox Margin="10,0,10,10" Text="{Binding Path=DatabaseModel.DatabaseName}" />
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,54 @@
+﻿<Page
+    x:Class="DocumentAdder.View.SettingsViews.RepositorySettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:DocumentAdder.View.SettingsViews"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:DocumentAdder.ViewModel.SettingsViewModels"
+    Title="RepositorySettingsView"
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <vm:RepositorySettingViewModel />
+    </Page.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <ListBox
+            x:Name="PathListView"
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
+            Margin="5"
+            DisplayMemberPath="StoragePath"
+            ItemsSource="{Binding Path=SettingModel.CollectionPaths}" />
+        <StackPanel
+            Grid.Row="3"
+            Grid.ColumnSpan="2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Orientation="Horizontal">
+            <Button
+                MinWidth="100"
+                MinHeight="28"
+                Margin="10,0,0,0"
+                Command="{Binding Path=AddLocalStorageCommand}"
+                Content="Add local" />
+            <Button
+                Height="28"
+                MinWidth="100"
+                MinHeight="28"
+                Margin="10,0,0,0"
+                Command="{Binding Path=ShowFTPStorageCommand}"
+                Content="Add FTP" />
+        </StackPanel>
+    </Grid>
+</Page>
