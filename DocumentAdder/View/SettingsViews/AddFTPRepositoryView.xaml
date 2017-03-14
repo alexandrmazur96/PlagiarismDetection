@@ -7,9 +7,10 @@
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:local="clr-namespace:DocumentAdder.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:res="clr-namespace:DocumentAdder.Properties"
     xmlns:vm="clr-namespace:DocumentAdder.ViewModel"
-    Title="AddFTPRepositoryView"
-    Width="300"
+    Title="{x:Static res:Resources.AddFTPWindowTitle}"
+    Width="377.068"
     Height="250"
     ResizeMode="NoResize"
     WindowStartupLocation="CenterOwner"
@@ -39,21 +40,26 @@
     </Window.DataContext>
     <Grid>
         <StackPanel>
-            <TextBlock Margin="5,0,0,0" Text="Введите ftp-путь к хранилищу:" />
+            <TextBlock Margin="5,0,0,0" Text="{x:Static res:Resources.AddFTPPathName}" />
             <TextBox Margin="5,5,10,5" Text="{Binding Path=FTPRepositoryModel.FTPPath}" />
-            <TextBlock Margin="5,0,0,0" Text="Введите логин от этого ftp-хранилища:*" />
+            <TextBlock Margin="5,0,0,0" Text="{x:Static res:Resources.AddFTPLoginName}" />
             <TextBox Margin="5,5,10,5" Text="{Binding Path=FTPRepositoryModel.FTPLogin}" />
-            <TextBlock Margin="5,0,0,0" Text="Введите пароль от этого ftp-хранилища:*" />
+            <TextBlock Margin="5,0,0,0" Text="{x:Static res:Resources.AddFTPPasswordName}" />
             <PasswordBox Margin="5,5,10,5">
                 <i:Interaction.Behaviors>
                     <custom:PasswordBehavior Password="{Binding Path=FTPRepositoryModel.FTPPassword, Mode=TwoWay}" />
                 </i:Interaction.Behaviors>
             </PasswordBox>
-            <TextBlock Margin="5,0,0,0" Text="*Оставьте поля логина и пароля пустыми," />
-            <TextBlock Margin="15,0,0,0" Text="если они не нужны" />
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                <Button Command="{Binding Path=AddCommand}" Content="Добавить" />
-                <Button Command="{Binding Path=CancelCommand}" Content="Отмена" />
+            <TextBlock
+                Margin="5,0,0,0"
+                Text="{x:Static res:Resources.AddFTPSomeNote}"
+                TextWrapping="WrapWithOverflow" />
+            <StackPanel
+                Margin="0,14,0,0"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal">
+                <Button Command="{Binding Path=AddCommand}" Content="{x:Static res:Resources.AddFTPBtnAdd}" />
+                <Button Command="{Binding Path=CancelCommand}" Content="{x:Static res:Resources.AddFTPBtnCancel}" />
             </StackPanel>
         </StackPanel>
     </Grid>

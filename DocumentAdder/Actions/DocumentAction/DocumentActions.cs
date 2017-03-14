@@ -1,27 +1,26 @@
-﻿using DocumentAdder.Types;
-using DocumentFormat.OpenXml.Packaging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using DocumentAdder.Types;
+using DocumentFormat.OpenXml.Packaging;
 using Word = Microsoft.Office.Interop.Word;
 
-namespace DocumentAdder.Actions
+namespace DocumentAdder.Actions.DocumentAction
 {
     public class DocumentActions
     {
-        private char[] SEPARATORS =
+        private readonly char[] _separators =
         {
             //стоп-символы
             '.', ';', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '\\', '/',
             '<', '>', '\'', '№', '?', ':', '`', '~', ' ', '\t', '\n', '\r'
         };
 
-        private string[] STOP_WORDS = {         
+        private readonly string[] _stopWords = {         
             //стоп-цифры
                 //римские
                     "I", "II", "III", "IIII", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XX", "XXX", "M",
@@ -117,11 +116,11 @@ namespace DocumentAdder.Actions
                 if (item.StorageType == InternalStorageType.Directory)
                 {
                     //filesCount += new DirectoryInfo(item.StoragePath).GetFiles().Count();
-                    foreach (string documentFile in Directory.GetFiles(item.StoragePath, "*.*").
-                    Where(s => fileTypes.Contains(Path.GetExtension(s).ToLower())))
+                    filesCount += Directory.GetFiles(item.StoragePath, "*.*").Where(s =>
                     {
-                        filesCount++;
-                    }
+                        var extension = Path.GetExtension(s);
+                        return extension != null && fileTypes.Contains(extension.ToLower());
+                    }).Count();
                 }
                 if (item.StorageType == InternalStorageType.FTP)
                 {
@@ -129,29 +128,30 @@ namespace DocumentAdder.Actions
                     {
                         var list = new List<string>();
                         //Создаем новое подключение ftp по адресу, указаному в коллекции
-                        FtpWebRequest ftp_req = (FtpWebRequest)WebRequest.Create(item.StoragePath);
+                        FtpWebRequest ftpReq = (FtpWebRequest)WebRequest.Create(item.StoragePath);
 
                         //указываем не кешировать запрос
-                        ftp_req.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
+                        ftpReq.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
 
                         //выбираем команду для ftp, в данном случае - получить подробную информацию о содержимом
-                        ftp_req.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
+                        ftpReq.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
 
                         //задаем учетные данные для ftp (логин и пароль)
-                        ftp_req.Credentials = new NetworkCredential(item.FTPLogin, item.FTPPassword);
+                        ftpReq.Credentials = new NetworkCredential(item.FTPLogin, item.FTPPassword);
 
                         //получаем ответ от ftp-сервера:
-                        using (var response = await ftp_req.GetResponseAsync())
+                        using (var response = await ftpReq.GetResponseAsync())
                         {
                             using (var stream = response.GetResponseStream())
                             {
-                                using (var reader = new StreamReader(stream, true))
-                                {
-                                    while (!reader.EndOfStream)
+                                if (stream != null)
+                                    using (var reader = new StreamReader(stream, true))
                                     {
-                                        list.Add(await reader.ReadLineAsync());
+                                        while (!reader.EndOfStream)
+                                        {
+                                            list.Add(await reader.ReadLineAsync());
+                                        }
                                     }
-                                }
                             }
                         }
                         filesCount += list.Count;
@@ -173,7 +173,7 @@ namespace DocumentAdder.Actions
         /// <returns>Возвращает очищенный (канонизированный) список слов, готовых к работе в алгоритме TF*IDF</returns>
         public List<string> GetWordCanonedTokens(string wordFilePath)
         {
-            List<string> _tokenList = new List<string>();
+            List<string> tokenList = new List<string>();
             try
             {
                 object fileName = wordFilePath;
@@ -183,7 +183,8 @@ namespace DocumentAdder.Actions
                 //если документ в старом формате .doc, пересохраняем его в новый .docx
                 //используя COM порт
                 //это необходимое зло
-                if (Path.GetExtension(wordFilePath).Equals(".doc"))
+                var extension = Path.GetExtension(wordFilePath);
+                if (extension != null && extension.Equals(".doc"))
                 {
                     try
                     {
@@ -201,7 +202,7 @@ namespace DocumentAdder.Actions
                         //закрываем документ
                         doc.Close();
                         //удаляем старый файл
-                        File.Delete(fileName as string);
+                        File.Delete((string) fileName);
                         //переприсваиваем имена
                         fileName = newFileName;
                         //"обнуляем" ненужные переменные
@@ -223,13 +224,13 @@ namespace DocumentAdder.Actions
                 }
 
                 //очищаем или канонизируем его, превращая в список
-                _tokenList = TextPurify(rawText);
+                tokenList = TextPurify(rawText);
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine(e.Message);
             }
-            return _tokenList;
+            return tokenList;
         }
 
         /// <summary>
@@ -239,23 +240,16 @@ namespace DocumentAdder.Actions
         /// <returns>Коллекцию слов из текста, которые готовы к употреблению =)</returns>
         private List<string> TextPurify(string text)
         {
-            List<string> _purifiedTokens = new List<string>();
             //разделяем ввесь текст на отдельные слова
-            List<string> rawTokens = text.Split(SEPARATORS).ToList();
+            List<string> rawTokens = text.Split(_separators).ToList();
 
-            //проходимся по этому списку слов в foreache-цикле
-            foreach (string word in rawTokens)
-            {
-                //удаляя цифры со слов
-                char[] purified = word.ToCharArray().Where(n => !char.IsDigit(n)).ToArray();
-                //и добавляя их в новую коллекцию слов (будущий очищеный список)
-                _purifiedTokens.Add(new string(purified));
-            }
+            //проходимся по этому списку слов в linq-выражении
+            List<string> purifiedTokens = rawTokens.Select(word => word.ToCharArray().Where(n => !char.IsDigit(n)).ToArray()).Select(purified => new string(purified)).ToList();
 
             //из этой коллекции удаляем все пустые элементы и стоп-слова используя linq
-            _purifiedTokens.RemoveAll(item => STOP_WORDS.Contains(item) || string.IsNullOrWhiteSpace(item));
+            purifiedTokens.RemoveAll(item => _stopWords.Contains(item) || string.IsNullOrWhiteSpace(item));
 
-            return _purifiedTokens;
+            return purifiedTokens;
         }
 
     }

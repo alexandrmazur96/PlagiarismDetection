@@ -3,18 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DocumentAdder.Model.SettingsModels
 {
-    [DataContract]
     public class RepositorySettingModel : BaseModel
     {
         #region Fields
         private string _pathToDirectory;
-        private string _fileTypes;
         private uint _scanTimeout;
         private ObservableCollection<RepositoryPath> _collectionPaths;
         #endregion
@@ -25,7 +22,6 @@ namespace DocumentAdder.Model.SettingsModels
         /// Представляет собой путь к папке с файлами, которые следует обработать
         /// </summary>
         /// <value>PathToDirectory свойство задает/возвращает значение типа string поля, _pathToDirectory</value>
-        [DataMember]
         public string PathToDirectory
         {
             get
@@ -34,34 +30,15 @@ namespace DocumentAdder.Model.SettingsModels
             }
             set
             {
-                _pathToDirectory = value;
+                _pathToDirectory = value;                
                 NotifyPropertyChanged();
             }
         }
-
-        /// <summary>
-        /// Предоставляет данные о типах текстовых файлов, которые необходимо сканировать и обрабатывать
-        /// <value>FileTypes свойство возвращает значения типа string поля, _fileTypes</value>
-        /// </summary>       
-        [DataMember]
-        public string FileTypes
-        {
-            get
-            {
-                return _fileTypes;
-            }
-            private set
-            {
-                _fileTypes = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        
         /// <summary>
         /// Предоставляет время обновления сканирования файлов в указаных директориях. Не может быть меньше 1. По умолчанию 1.
         /// <value>ScanTimeout свойство возвращает значения типа uint поля, _scanTimeout</value>
         /// </summary>
-        [DataMember]
         public uint ScanTimeout
         {
             get
@@ -77,17 +54,18 @@ namespace DocumentAdder.Model.SettingsModels
         /// <summary>
         /// Возвращает коллекцию всех путей, с которых нужно обработать файлы
         /// </summary>
-        /// <value>CollectionPaths свойство возвращает значение типа ObservableCollection<string> поля, _collectionPaths</value>
-        [DataMember]
+        /// <value>CollectionPaths свойство возвращает значение типа ObservableCollection<RepositoryPath> поля, _collectionPaths</value>
         public ObservableCollection<RepositoryPath> CollectionPaths
         {
             get
             {
-                return _collectionPaths;
+                //return _collectionPaths;
+                return ProgramSettings.CollectionsPaths;
             }
             private set
             {
-                _collectionPaths = value;
+                //_collectionPaths = value;
+                ProgramSettings.CollectionsPaths = value;
                 NotifyPropertyChanged();
             }
         }
@@ -99,8 +77,7 @@ namespace DocumentAdder.Model.SettingsModels
         /// задает возможные форматы файлов для чтения.
         /// </summary>
         public RepositorySettingModel()
-        {
-            _fileTypes = "*.txt, *.doc, *.docx, *.rtf, *.otd, *.pdf";
+        {            
             _collectionPaths = new ObservableCollection<RepositoryPath>();
         }        
     }

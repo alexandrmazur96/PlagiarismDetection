@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentAdder.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -27,12 +28,14 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                return _connectionString;
+                //return _connectionString;
+                return ProgramSettings.ConnectionString;
             }
             set
             {
-                _connectionString = value;
-                NotifyPropertyChanged();
+                //_connectionString = value;
+                ProgramSettings.ConnectionString = value;
+                NotifyPropertyChanged();                
             }
         }
 
@@ -45,11 +48,13 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                return _login;
+                //return _login;
+                return ProgramSettings.Login;
             }
             set
             {
-                _login = value;
+                //_login = value;
+                ProgramSettings.Login = value;
                 NotifyPropertyChanged();
             }
         }
@@ -63,11 +68,13 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                return _password;
+                //return _password;
+                return ProgramSettings.Password;
             }
             set
             {
-                _password = value;
+                //_password = value;
+                ProgramSettings.Password = value;
                 NotifyPropertyChanged();
             }
         }        
@@ -81,11 +88,13 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                return _databaseName;
+                //return _databaseName;
+                return ProgramSettings.DataBaseName;
             }
             set
             {
-                _databaseName = value;
+                //_databaseName = value;
+                ProgramSettings.DataBaseName = value;
                 NotifyPropertyChanged();
             }
         }

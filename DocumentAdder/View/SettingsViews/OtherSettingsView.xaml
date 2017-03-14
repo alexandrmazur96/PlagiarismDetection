@@ -1,14 +1,69 @@
-﻿<Page x:Class="DocumentAdder.View.SettingsViews.OtherSettingsView"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:DocumentAdder.View.SettingsViews"
-      mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
-      Title="OtherSettingsView">
-
+﻿<Page
+    x:Class="DocumentAdder.View.SettingsViews.OtherSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:DocumentAdder.View.SettingsViews"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:res="clr-namespace:DocumentAdder.Properties"
+    xmlns:vm="clr-namespace:DocumentAdder.ViewModel.SettingsViewModels"
+    Title="OtherSettingsView"
+    d:DesignHeight="300"
+    d:DesignWidth="500"
+    Background="White"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <vm:OtherSettingViewModel />
+    </Page.DataContext>
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="16"
+            Text="{x:Static res:Resources.OtherSettingsExtensions}"
+            TextWrapping="Wrap" />
+        <StackPanel
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <CheckBox
+                Margin="0,0,10,0"
+                Content="*.doc"
+                IsChecked="{Binding Path=OtherModel.IsDoc}" />
+            <CheckBox
+                Margin="0,0,10,0"
+                Content="*.docx"
+                IsChecked="{Binding Path=OtherModel.IsDocx}" />
+            <CheckBox
+                Margin="0,0,10,0"
+                Content="*.rtf"
+                IsChecked="{Binding Path=OtherModel.IsRtf}" />
+            <CheckBox
+                Margin="0,0,10,0"
+                Content="*.txt"
+                IsChecked="{Binding Path=OtherModel.IsTxt}" />
+            <CheckBox
+                Margin="0,0,10,0"
+                Content="*.otd"
+                IsChecked="{Binding Path=OtherModel.IsOtd}" />
+            <CheckBox
+                Margin="0,0,10,0"
+                Content="*.pdf"
+                IsChecked="{Binding Path=OtherModel.IsPdf}" />
+        </StackPanel>
     </Grid>
 </Page>

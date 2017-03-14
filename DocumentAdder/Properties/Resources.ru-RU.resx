@@ -118,58 +118,58 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AboutProgramDescription" xml:space="preserve">
-    <value>Здійснюється додавання та фільтрація данних</value>
+    <value>Производится добавление и фильтрация данных</value>
   </data>
   <data name="AddFTPBtnAdd" xml:space="preserve">
-    <value>Додати</value>
+    <value>Добавить</value>
   </data>
   <data name="AddFTPBtnCancel" xml:space="preserve">
-    <value>Відміна</value>
+    <value>Отмена</value>
   </data>
   <data name="AddFTPLoginName" xml:space="preserve">
-    <value>Введіть Логін від цього FTP-сховища:*</value>
+    <value>Введите Логин от этого FTP-хранилища:*</value>
   </data>
   <data name="AddFTPPasswordName" xml:space="preserve">
-    <value>Введіть пароль від цього FTP-сховища:*</value>
+    <value>Введите пароль от этого FTP-хранилища:*</value>
   </data>
   <data name="AddFTPPathName" xml:space="preserve">
-    <value>Введіть FTP-шлях до сховища:</value>
+    <value>Введите путь к FTP-хранилищу:</value>
   </data>
   <data name="AddFTPSomeNote" xml:space="preserve">
-    <value>*Залиште поля логіна та пароля пустими, якщо вони не потрібні.</value>
+    <value>*Оставьте поля Логина и пароля пустыми, если они не нужны.</value>
   </data>
   <data name="AddFTPWindowTitle" xml:space="preserve">
-    <value>Додати новий FTP-репозиторій</value>
+    <value>Добавить новый FTP-репозиторий</value>
   </data>
   <data name="DatabaseStngConnectStr" xml:space="preserve">
-    <value>Строка підключення до БД:</value>
+    <value>Строка подключения к БД:</value>
   </data>
   <data name="DatabaseStngDbName" xml:space="preserve">
-    <value>Ім'я (назва) бази даних</value>
+    <value>Имя (название) базы данных:</value>
   </data>
   <data name="DatabaseStngLogin" xml:space="preserve">
-    <value>Логін:</value>
+    <value>Логин:</value>
   </data>
   <data name="DatabaseStngPassword" xml:space="preserve">
     <value>Пароль:</value>
   </data>
   <data name="MainDataGridFileAddDate" xml:space="preserve">
-    <value>Дата додавання</value>
+    <value>Дата добавления</value>
   </data>
   <data name="MainDataGridFilePath" xml:space="preserve">
-    <value>Шлях до файлу</value>
+    <value>Путь к файлу</value>
   </data>
   <data name="MainDataGridFileType" xml:space="preserve">
-    <value>Тип файлу</value>
+    <value>Тип файла</value>
   </data>
   <data name="MainFirstTabHeader" xml:space="preserve">
-    <value>Стартова</value>
+    <value>Стартовая</value>
   </data>
   <data name="MainRestartBtnName" xml:space="preserve">
     <value>Рестарт</value>
   </data>
   <data name="MainSecondTabHeader" xml:space="preserve">
-    <value>Налаштування</value>
+    <value>Настройки</value>
   </data>
   <data name="MainStartBtnName" xml:space="preserve">
     <value>Старт</value>
@@ -178,18 +178,18 @@
     <value>Стоп</value>
   </data>
   <data name="MainThirdTabHeader" xml:space="preserve">
-    <value>Про программу</value>
+    <value>О программе</value>
   </data>
   <data name="OtherSettingsExtensions" xml:space="preserve">
-    <value>Виберіть необхідні розширення файлу</value>
+    <value>Выберите необходимые расширение файла</value>
   </data>
   <data name="RepositoryStngAddFtpBtn" xml:space="preserve">
-    <value>Додати FTP-сховище</value>
+    <value>Добавить FTP-хранилище</value>
   </data>
   <data name="RepositoryStngAddLocalBtn" xml:space="preserve">
-    <value>Додати локальне сховище</value>
+    <value>Добавить локальное хранилище</value>
   </data>
   <data name="RepositoryStngTitle" xml:space="preserve">
-    <value>Налаштування репозиторія</value>
+    <value>Настройки репозитория</value>
   </data>
 </root>

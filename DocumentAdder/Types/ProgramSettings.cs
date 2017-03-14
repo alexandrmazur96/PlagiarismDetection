@@ -9,35 +9,99 @@ using System.Threading.Tasks;
 namespace DocumentAdder.Types
 {
     [DataContract]
-    internal static class ProgramSettings
+    public class ProgramSettings
     {
         #region Properties
-        //database settings
+        #region DataBase Settings
         [DataMember]
-        internal static string ConnectionString { get; set; }
-        
+        public string ConnectionString { get; set; }
+
         [DataMember]
-        internal static string Login { get; set; }
+        public string Login { get; set; }
 
         [DataMember]
         //надо будет зашифровать!!!
-        internal static string Password { get; set; }
+        public string Password { get; set; }
 
         [DataMember]
-        internal static string DataBaseName { get; set; }
-
-        //repository settings
-        [DataMember]
-        internal static string FileTypes { get; set; }
-
-        [DataMember]
-        internal static ObservableCollection<RepositoryPath> CollectionsPaths { get; set; }
+        public string DataBaseName { get; set; }
 
         #endregion
+        #region Repository Settings        
 
-        static ProgramSettings()
+        [DataMember]
+        public ObservableCollection<RepositoryPath> CollectionsPaths { get; set; }
+
+        #endregion
+        #region Other Text Settings
+        [DataMember]
+        public bool IsDoc { get; set; }
+
+        [DataMember]
+        public bool IsDocx { get; set; }
+
+        [DataMember]
+        public bool IsRtf { get; set; }
+
+        [DataMember]
+        public bool IsOtd { get; set; }
+
+        [DataMember]
+        public bool IsPdf { get; set; }
+
+        [DataMember]
+        public bool IsTxt { get; set; }
+
+        [DataMember]
+        public string FileTypes { get; set; }
+        #endregion
+        #endregion
+
+        private static ProgramSettings _instanceSettings;
+
+        public override string ToString()
         {
-            
+            return "ConnectionString = " + ConnectionString + "\n"
+                + "Login = " + Login + "\n"
+                + "Password = " + Password + "\n"
+                + "DataBaseName = " + DataBaseName + "\n"
+                + "FileTypes = " + FileTypes + "\n"
+                + " " + IsDoc + " " + IsDocx + " " + IsOtd;
+        }
+
+        private ProgramSettings()
+        {
+            CollectionsPaths = new ObservableCollection<RepositoryPath>();
+            FileTypes = "";
+        }
+
+        public static ProgramSettings GetInstance()
+        {
+            if (_instanceSettings == null)
+            {
+                _instanceSettings = new ProgramSettings();
+                return _instanceSettings;
+            }
+            else
+            {
+                return _instanceSettings;
+            }
+        }
+
+        public static void LoadSettings(ProgramSettings loadedProgramSettings)
+        {
+            ProgramSettings.GetInstance().IsDoc = loadedProgramSettings.IsDoc;
+            ProgramSettings.GetInstance().IsDocx = loadedProgramSettings.IsDocx;
+            ProgramSettings.GetInstance().IsRtf = loadedProgramSettings.IsRtf;
+            ProgramSettings.GetInstance().IsOtd = loadedProgramSettings.IsOtd;
+            ProgramSettings.GetInstance().IsPdf = loadedProgramSettings.IsPdf;
+            ProgramSettings.GetInstance().IsTxt = loadedProgramSettings.IsTxt;
+            ProgramSettings.GetInstance().FileTypes = loadedProgramSettings.FileTypes;
+            ProgramSettings.GetInstance().CollectionsPaths = loadedProgramSettings.CollectionsPaths;
+            ProgramSettings.GetInstance().ConnectionString = loadedProgramSettings.ConnectionString;
+            ProgramSettings.GetInstance().DataBaseName = loadedProgramSettings.DataBaseName;
+            ProgramSettings.GetInstance().Login = loadedProgramSettings.Login;
+            ProgramSettings.GetInstance().Password = loadedProgramSettings.Password;
         }
     }
 }

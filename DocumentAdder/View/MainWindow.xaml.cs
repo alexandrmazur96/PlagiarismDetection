@@ -25,7 +25,6 @@ namespace DocumentAdder
         public MainWindow()
         {
             InitializeComponent();
-            Actions.SaveOrLoadActions.LoadSettings();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -34,8 +33,10 @@ namespace DocumentAdder
         }
 
         private void ListBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {            
-            SettingsFrame.Content = (SettingsListBox.SelectedValue as Pages).PageRef;
+        {
+            Pages pages = SettingsListBox.SelectedValue as Pages;
+            if (pages != null)
+                SettingsFrame.Content = pages.PageRef;
         }
     }
 }

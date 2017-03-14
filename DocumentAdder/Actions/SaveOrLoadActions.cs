@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DocumentAdder.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -11,25 +12,36 @@ namespace DocumentAdder.Actions
 {
     internal static class SaveOrLoadActions
     {
+
+        private static readonly JsonSerializer Serializer;
+        private static readonly string SettingsPath;
         public static void SaveSettings()
         {
-            var serializer = new JsonSerializer();
-
-            using (var fs = new FileStream("settings.json", FileMode.OpenOrCreate))
+            using (StreamWriter sw = new StreamWriter(SettingsPath))
             {
-                var jsonWriter = new BsonWriter(fs);
-                serializer.Serialize(jsonWriter, settings);
+                using (JsonWriter jw = new JsonTextWriter(sw))
+                {
+                    Serializer.Serialize(jw, ProgramSettings.GetInstance());
+                }
             }
         }
 
         public static void LoadSettings()
         {
-            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(Model.MainSettingModel));
-
-            using (FileStream fs = new FileStream("settings.json", FileMode.Open))
+            using (StreamReader sr = new StreamReader(SettingsPath))
             {
-                ViewModel.MainViewModel.SettingModel = (Model.MainSettingModel)jsonFormatter.ReadObject(fs);
+                using (JsonReader jr = new JsonTextReader(sr))
+                {
+                    ProgramSettings.LoadSettings(Serializer.Deserialize<ProgramSettings>(jr));
+                }
             }
+        }
+
+        static SaveOrLoadActions()
+        {
+            Serializer = new JsonSerializer();
+            SettingsPath = Path.Combine(Environment.CurrentDirectory, "settings.json");
+            Console.WriteLine(SettingsPath);
         }
     }
 }

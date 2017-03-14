@@ -15,17 +15,23 @@ namespace DocumentAdder.ViewModel
 {
     public class MainViewModel
     {
-        public MainModel DocumentAdderModel { get; private set; }
+        public MainModel DocumentAdderModel { get; }
         public static MainSettingModel SettingModel { get; set; }
 
         #region Commands
         //main programm commands
         public ICommand StartProgrammCommand { get; private set; }
         public ICommand StopProgrammCommand { get; private set; }
-        public ICommand RestartProgrammCommand { get; private set; }                
+        public ICommand RestartProgrammCommand { get; private set; }
+        public ICommand GetSettings { get; private set; }
         #endregion
 
         #region Methods
+
+        private void GetSetting()
+        {
+            Console.WriteLine(ProgramSettings.GetInstance().ToString());            
+        }
         //main programm methods        
 
         private void StartProgramm()
@@ -36,7 +42,7 @@ namespace DocumentAdder.ViewModel
         }
 
         //settings methods
-       
+
 
         //other methods
         private int ThreadCount(int fileCount)
@@ -72,10 +78,11 @@ namespace DocumentAdder.ViewModel
         public MainViewModel()
         {
             DocumentAdderModel = new MainModel();
-            
+
             var t = new Types.DataBase.DataBase();
-            t.ChooseDatabase("test2"); 
-            
+            t.ChooseDatabase("test2");
+
+            GetSettings = new DelegateCommand(action => GetSetting());
         }
     }
 }

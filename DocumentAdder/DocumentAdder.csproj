@@ -211,7 +211,7 @@
     <Compile Include="Types\Document.cs" />
     <Compile Include="Types\InternalStorageType.cs" />
     <Compile Include="Types\Pages.cs" />
-    <Compile Include="Helpers\BaseModel.cs" />
+    <Compile Include="Model\BaseModel.cs" />
     <Compile Include="Model\MainModel.cs" />
     <Compile Include="Model\MainSettingModel.cs" />
     <Compile Include="Types\RepositoryPath.cs" />
@@ -256,9 +256,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.ru-RU.resx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
