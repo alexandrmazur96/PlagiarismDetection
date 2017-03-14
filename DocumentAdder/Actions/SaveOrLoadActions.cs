@@ -15,6 +15,10 @@ namespace DocumentAdder.Actions
 
         private static readonly JsonSerializer Serializer;
         private static readonly string SettingsPath;
+
+        /// <summary>
+        /// Сохраняет настройки приложения, сериализуя их в JSON-файл
+        /// </summary>
         public static void SaveSettings()
         {
             using (StreamWriter sw = new StreamWriter(SettingsPath))
@@ -26,22 +30,35 @@ namespace DocumentAdder.Actions
             }
         }
 
+        /// <summary>
+        /// Загружает настройки приложения, десериализуя их из JSON-файла. Вызывается в App.xaml.cs
+        /// </summary>
         public static void LoadSettings()
         {
-            using (StreamReader sr = new StreamReader(SettingsPath))
+            try
             {
-                using (JsonReader jr = new JsonTextReader(sr))
+                using (var sr = new StreamReader(SettingsPath))
                 {
-                    ProgramSettings.LoadSettings(Serializer.Deserialize<ProgramSettings>(jr));
+                    using (JsonReader jr = new JsonTextReader(sr))
+                    {
+                        ProgramSettings.LoadSettings(Serializer.Deserialize<ProgramSettings>(jr));
+                    }
                 }
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.Error.WriteLine("Скорее всего, это первая инициализация приложения, или файл настроек был удален. Невозможно найти/открыть файл. " 
+                    + ex.Message);
             }
         }
 
+        /// <summary>
+        /// Инициализируем Newtonsoft.Json сериализатор и путь (строку, string) к настройке приложения.
+        /// </summary>
         static SaveOrLoadActions()
         {
             Serializer = new JsonSerializer();
             SettingsPath = Path.Combine(Environment.CurrentDirectory, "settings.json");
-            Console.WriteLine(SettingsPath);
         }
     }
 }

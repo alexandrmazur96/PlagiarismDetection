@@ -32,11 +32,11 @@ namespace DocumentAdder
             Actions.SaveOrLoadActions.SaveSettings();
         }
 
-        private void ListBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Pages pages = SettingsListBox.SelectedValue as Pages;
-            if (pages != null)
-                SettingsFrame.Content = pages.PageRef;
+        private void SettingsListBox_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {           
+            var item = ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) as ListBoxItem;
+            var pages = item?.Content as Pages;
+            if (pages != null) SettingsFrame.Content = pages.PageRef;
         }
     }
 }

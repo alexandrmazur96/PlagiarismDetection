@@ -11,29 +11,11 @@ namespace DocumentAdder.Model.SettingsModels
     public class RepositorySettingModel : BaseModel
     {
         #region Fields
-        private string _pathToDirectory;
         private uint _scanTimeout;
         private ObservableCollection<RepositoryPath> _collectionPaths;
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Представляет собой путь к папке с файлами, которые следует обработать
-        /// </summary>
-        /// <value>PathToDirectory свойство задает/возвращает значение типа string поля, _pathToDirectory</value>
-        public string PathToDirectory
-        {
-            get
-            {
-                return _pathToDirectory;
-            }
-            set
-            {
-                _pathToDirectory = value;                
-                NotifyPropertyChanged();
-            }
-        }
+        #region Properties       
         
         /// <summary>
         /// Предоставляет время обновления сканирования файлов в указаных директориях. Не может быть меньше 1. По умолчанию 1.
@@ -59,12 +41,10 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                //return _collectionPaths;
                 return ProgramSettings.CollectionsPaths;
             }
             private set
             {
-                //_collectionPaths = value;
                 ProgramSettings.CollectionsPaths = value;
                 NotifyPropertyChanged();
             }
