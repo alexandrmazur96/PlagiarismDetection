@@ -68,7 +68,7 @@
                             Margin="10,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
-                            Command="{Binding Path=GetSettings}"
+                            Command="{Binding Path=StartProgrammCommand}"
                             Content="{x:Static res:Resources.MainStartBtnName}"
                             IsEnabled="{Binding Path=DocumentAdderModel.IsStartBtnEnabled}" />
                         <Button

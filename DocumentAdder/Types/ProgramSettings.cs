@@ -75,6 +75,10 @@ namespace DocumentAdder.Types
             FileTypes = "";
         }
 
+        /// <summary>
+        /// Возвращает единственный экземпляр класса ProgramSettings. Необходим для паттерна Singleton
+        /// </summary>
+        /// <returns>ProgramSettings instance single object</returns>
         public static ProgramSettings GetInstance()
         {
             if (_instanceSettings == null)

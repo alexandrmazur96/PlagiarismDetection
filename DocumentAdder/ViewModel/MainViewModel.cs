@@ -1,5 +1,6 @@
 ﻿using DocumentAdder.Helpers;
 using DocumentAdder.Model;
+using DocumentAdder.Actions.DocumentAction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +40,15 @@ namespace DocumentAdder.ViewModel
             DocumentAdderModel.IsStartBtnEnabled = false;
             DocumentAdderModel.IsStopBtnEnabled = true;
             DocumentAdderModel.IsRestartBtnEnabled = true;
+
+            var lists = DocumentActions.GetFilePaths();
+            foreach (var item in lists)
+            {
+                var canonedTokens = DocumentActions.GetWordCanonedTokens(item);
+                canonedTokens.ConsolePrintList("Original List:");
+                DocumentActions.Cyrillify(ref canonedTokens);
+                canonedTokens.ConsolePrintList("Cyrillify List:");
+            }            
         }
 
         //settings methods
@@ -64,6 +74,8 @@ namespace DocumentAdder.ViewModel
                 return 4;
             }
         }
+        
+        
         #endregion
 
         static MainViewModel()
@@ -83,6 +95,7 @@ namespace DocumentAdder.ViewModel
             t.ChooseDatabase("test2");
 
             GetSettings = new DelegateCommand(action => GetSetting());
+            StartProgrammCommand = new DelegateCommand(action => StartProgramm());
         }
     }
 }

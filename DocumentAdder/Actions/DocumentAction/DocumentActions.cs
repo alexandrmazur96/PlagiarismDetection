@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
+using DocumentAdder.Helpers;
 using DocumentAdder.Types;
 using DocumentFormat.OpenXml.Packaging;
 using Word = Microsoft.Office.Interop.Word;
@@ -13,23 +15,34 @@ namespace DocumentAdder.Actions.DocumentAction
 {
     public class DocumentActions
     {
-        private readonly char[] _separators =
+        /// <summary>
+        /// Разделители, для extension-метода класса string - Split.
+        /// Необходимы, для разбиение текста по указанным разделителям.
+        /// </summary>
+        private static readonly char[] Separators =
         {
             //стоп-символы
-            '.', ';', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '\\', '/',
+            '.', ',', ';', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '\\', '/',
             '<', '>', '\'', '№', '?', ':', '`', '~', ' ', '\t', '\n', '\r'
         };
 
-        private readonly string[] _stopWords = {         
+        /// <summary>
+        /// Коллекция стоп-слов, которые не несут смысловой нагрузки в тексте 
+        /// и которые необходимо удалить.
+        /// </summary>
+        private static readonly string[] StopWords = {         
             //стоп-цифры
                 //римские
                     "I", "II", "III", "IIII", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XX", "XXX", "M",
                     "І", "ІІ", "ІІІ", "ІІІІ", "М", "ІХ", "Х", "ХІ", "ХІІ", "ХІІІ", "ХХ", "ХХХ",
             //стоп-буквы
                 //киррилические
-                "а", "і", "й", "о", "з", "в", "я", "е", "с", "к", "э", "у",
+                "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "й", "к", "л", "м", "н", "о",
+                "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "ъ", "ы", "ь", "э", "ю", "я",
+                "і", "ї", "ґ", 
                 //латинские
-                "a", "u", "i",
+                "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
+                "v", "w", "x", "y", "z",
             //стоп-слова
                 //киррилические
                 "без", "біля", "близько", "ім’я", "інтересах", "бік", "залежності", "від", "міру", "напрямі", "до", "порівнянні", "процесі",
@@ -56,6 +69,20 @@ namespace DocumentAdder.Actions.DocumentAction
                 "преді", "предо", "при", "пріч", "про", "проз", "проміж", "промеж", "просто", "проти", "против", "противно", "протягом", "ради",
                 "раніше", "раніш", "серед", "середи", "середу", "скрізь", "спереду", "стосовно", "супроти", "супротив", "вигляді", "випадку",
                 "відповідності", "до", "відповідь", "на", "зв’язку", "узбіч", "ціною", "через", "шляхом", "щодо",
+
+                "еще","него","сказать", "нее","со", "без", "же", "ней", "совсем", "более","жизнь","нельзя","так",
+                "больше", "за","нет","такой", "будет","зачем", "ни", "там", "будто","здесь", "нибудь", "тебя",
+                "бы", "никогда", "тем", "был", "из", "ним", "теперь", "была","из-за", "них", "то", "были", "или", "ничего",
+                "тогда", "было", "им", "но", "того", "быть", "иногда", "ну", "тоже", "их", "только", "вам", "об", "том",
+                "вас", "кажется", "один", "тот", "вдруг", "как", "он", "три", "ведь", "какая", "она", "тут", "во", "какой",
+                "они", "ты", "вот", "когда", "опять", "впрочем", "конечно", "от", "уж", "все", "которого", "перед", "уже",
+                "всегда", "которые", "по", "хорошо", "всего", "кто", "под", "хоть", "всех", "куда", "после", "чего", "всю", "ли",
+                "потом", "человек", "вы", "лучше", "потому", "чем", "между", "почти", "через", "где", "меня", "при", "что",
+                "говорил", "мне", "про", "чтоб", "да", "много", "раз", "чтобы", "даже", "может", "разве", "чуть", "два", "можно",
+                "эти", "для", "мой", "сам", "этого", "до", "моя", "свое", "этой", "другой", "мы", "свою", "этом", "его", "на",
+                "себе", "этот", "ее", "над", "себя", "эту", "ей", "надо", "сегодня", "ему", "наконец", "сейчас", "если",
+                "нас", "сказал", "есть", "не", "сказала", "это", "тех", "дает", "те",
+                "нужен", "вообще", "этих", "даст", "ко", "ваш", "млн", "млрд", "тыс", "рис", "рис.", 
                 //латинские
                 "about","above","according","across","actually","ad","adj","ae","af","after","afterwards","ag","again","against","ai","al","all","almost","alone","along","already","also","although","always","am","among","amongst","an","and","another","any","anyhow","anyone","anything","anywhere","ao","aq","ar","are","aren","aren't","around","arpa","as","at","au","aw","az",
                 "ba","bb","bd","be","became","because","become","becomes","becoming","been","before","beforehand","begin","beginning","behind","being","below","beside","besides","between","beyond","bf","bg","bh","bi","billion","bj","bm","bn","bo","both","br","bs","bt","but","buy","bv","bw","by","bz",
@@ -83,20 +110,51 @@ namespace DocumentAdder.Actions.DocumentAction
                 "za", "zm", "zr"
         };
 
-        public List<string> GetFilePaths(ObservableCollection<RepositoryPath> collectionPathsToRepository, string filesType)
+        /// <summary>
+        /// Словарь для замены английский букв, которые одинаково пишутся на киррилице.
+        /// </summary>
+        private static readonly Dictionary<char, char> Replacement = new Dictionary<char, char>()
+        {
+            ['a'] = 'а',
+            ['A'] = 'А',
+            ['B'] = 'В',
+            ['c'] = 'с',
+            ['C'] = 'С',
+            ['e'] = 'е',
+            ['E'] = 'Е',
+            ['H'] = 'Н',
+            ['i'] = 'і',
+            ['I'] = 'I',
+            ['K'] = 'К',
+            ['M'] = 'М',
+            ['o'] = 'о',
+            ['O'] = 'О',
+            ['p'] = 'р',
+            ['P'] = 'Р',
+            ['T'] = 'Т',
+            ['x'] = 'х',
+            ['X'] = 'х'
+        };
+
+        public static List<string> GetFilePaths()
         {
             //коллекция с путями к *файлам* документов
             List<string> filePaths = new List<string>();
 
-            foreach (var item in collectionPathsToRepository)
+            foreach (var item in ProgramSettings.GetInstance().CollectionsPaths)
             {
                 if (item.StorageType == InternalStorageType.Directory)
                 {
                     foreach (string documentFile in Directory.GetFiles(item.StoragePath, "*.*").
-                    Where(s => filesType.Contains(Path.GetExtension(s).ToLower())))
+                    Where(s =>
+                        {
+                            var extension = Path.GetExtension(s);
+                            return extension != null && ProgramSettings.GetInstance().FileTypes.Contains(extension.ToLower());
+                        }))
                     {
                         //do work here
-                        Console.WriteLine(documentFile);
+                        //Console.WriteLine(documentFile);
+                        filePaths.Add(documentFile);
                     }
                 }
                 else if (item.StorageType == InternalStorageType.FTP)
@@ -171,7 +229,7 @@ namespace DocumentAdder.Actions.DocumentAction
         /// </summary>
         /// <param name="wordFilePath">Путь к документу MS Office Word</param>
         /// <returns>Возвращает очищенный (канонизированный) список слов, готовых к работе в алгоритме TF*IDF</returns>
-        public List<string> GetWordCanonedTokens(string wordFilePath)
+        public static List<string> GetWordCanonedTokens(string wordFilePath)
         {
             List<string> tokenList = new List<string>();
             try
@@ -196,17 +254,17 @@ namespace DocumentAdder.Actions.DocumentAction
                         //открываем указанный документ
                         app.Documents.Open(ref fileName, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss);
                         //получаем открытый документ для манипуляций
-                        Word.Document doc = app.ActiveDocument;                        
+                        Word.Document doc = app.ActiveDocument;
                         //пересохраняем его
                         doc.SaveAs2(newFileName, Word.WdSaveFormat.wdFormatXMLDocument);
                         //закрываем документ
                         doc.Close();
                         //удаляем старый файл
-                        File.Delete((string) fileName);
-                        //переприсваиваем имена
-                        fileName = newFileName;
-                        //"обнуляем" ненужные переменные
-                        newFileName = null;
+                        File.Delete((string)fileName);
+                        //переприсваиваем имена                        
+                        var tmpFileName = (string)newFileName;
+                        tmpFileName += ".docx";
+                        fileName = tmpFileName;
                         app.Quit();
                     }
                     catch (Exception e)
@@ -214,7 +272,7 @@ namespace DocumentAdder.Actions.DocumentAction
                         Console.Error.WriteLine(e.Message);
                     }
                 }
-                string rawText = null; //необработанный текст
+                string rawText; //необработанный текст
 
                 //открываем документ, используя оператор using (аналог try с ресурсами в Java)
                 using (WordprocessingDocument wordDocument = WordprocessingDocument.Open(fileName as string, false))
@@ -238,19 +296,36 @@ namespace DocumentAdder.Actions.DocumentAction
         /// </summary>
         /// <param name="text">Неочищенный текст, который нужно канонизировать</param>
         /// <returns>Коллекцию слов из текста, которые готовы к употреблению =)</returns>
-        private List<string> TextPurify(string text)
+        private static List<string> TextPurify(string text)
         {
             //разделяем ввесь текст на отдельные слова
-            List<string> rawTokens = text.Split(_separators).ToList();
+            List<string> rawTokens = text.Split(Separators).ToList();
 
             //проходимся по этому списку слов в linq-выражении
             List<string> purifiedTokens = rawTokens.Select(word => word.ToCharArray().Where(n => !char.IsDigit(n)).ToArray()).Select(purified => new string(purified)).ToList();
 
             //из этой коллекции удаляем все пустые элементы и стоп-слова используя linq
-            purifiedTokens.RemoveAll(item => _stopWords.Contains(item) || string.IsNullOrWhiteSpace(item));
+            purifiedTokens.RemoveAll(item => StopWords.Contains(item.ToLower()) || string.IsNullOrWhiteSpace(item));
 
             return purifiedTokens;
         }
 
+        /// <summary>
+        /// Заменяет латинские буквы, которые пишутся как кириллица на их кириллические аналоги.
+        /// </summary>
+        /// <param name="purifiedTokensList">Коллекция очищенных слов. Передается строго по ссылке (ref)</param>
+        public static void Cyrillify(ref List<string> purifiedTokensList)
+        {
+            var tmpList = new List<string>(purifiedTokensList);
+            foreach (var purifiedToken in tmpList)
+            {
+                var sb = new StringBuilder(purifiedToken);
+                foreach (var kvp in Replacement)
+                {
+                    sb.Replace(kvp.Key, kvp.Value);
+                }
+                purifiedTokensList = purifiedTokensList.ItemReplace(purifiedToken, sb.ToString());
+            }
+        }
     }
 }

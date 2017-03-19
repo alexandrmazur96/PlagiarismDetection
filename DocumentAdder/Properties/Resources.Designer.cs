@@ -277,6 +277,24 @@ namespace DocumentAdder.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Копіювати.
+        /// </summary>
+        public static string RepositoryStngContextBtnCopy {
+            get {
+                return ResourceManager.GetString("RepositoryStngContextBtnCopy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Видалити.
+        /// </summary>
+        public static string RepositoryStngContextBtnDelete {
+            get {
+                return ResourceManager.GetString("RepositoryStngContextBtnDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Налаштування репозиторія.
         /// </summary>
         public static string RepositoryStngTitle {

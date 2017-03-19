@@ -11,13 +11,6 @@ namespace DocumentAdder.Model.SettingsModels
     [DataContract]
     public class DatabaseSettingModel : BaseModel
     {
-        #region Fields
-        private string _connectionString;
-        private string _login;
-        private string _password;
-        private string _databaseName;
-        #endregion
-
         #region Properties
         /// <summary>
         /// Строка подключения к базе данных MongoDB.
@@ -28,12 +21,10 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                //return _connectionString;
                 return ProgramSettings.ConnectionString;
             }
             set
             {
-                //_connectionString = value;
                 ProgramSettings.ConnectionString = value;
                 NotifyPropertyChanged();                
             }
@@ -48,12 +39,10 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                //return _login;
                 return ProgramSettings.Login;
             }
             set
             {
-                //_login = value;
                 ProgramSettings.Login = value;
                 NotifyPropertyChanged();
             }
@@ -68,12 +57,10 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                //return _password;
                 return ProgramSettings.Password;
             }
             set
             {
-                //_password = value;
                 ProgramSettings.Password = value;
                 NotifyPropertyChanged();
             }
@@ -88,12 +75,10 @@ namespace DocumentAdder.Model.SettingsModels
         {
             get
             {
-                //return _databaseName;
                 return ProgramSettings.DataBaseName;
             }
             set
             {
-                //_databaseName = value;
                 ProgramSettings.DataBaseName = value;
                 NotifyPropertyChanged();
             }

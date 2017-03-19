@@ -189,6 +189,12 @@
   <data name="RepositoryStngAddLocalBtn" xml:space="preserve">
     <value>Додати локальне сховище</value>
   </data>
+  <data name="RepositoryStngContextBtnCopy" xml:space="preserve">
+    <value>Копіювати</value>
+  </data>
+  <data name="RepositoryStngContextBtnDelete" xml:space="preserve">
+    <value>Видалити</value>
+  </data>
   <data name="RepositoryStngTitle" xml:space="preserve">
     <value>Налаштування репозиторія</value>
   </data>

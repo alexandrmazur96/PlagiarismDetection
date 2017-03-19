@@ -18,11 +18,11 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
 
         #region Commands
         public ICommand AddLocalStorageCommand { get; private set; }
-        public ICommand ShowFTPStorageCommand { get; private set; }
+        public ICommand ShowFtpStorageCommand { get; private set; }
         #endregion
 
         #region Methods
-        private void addLocalStorage()
+        private void AddLocalStorage()
         {
             List<string> selectedPaths = null;
             var cofd = new CommonOpenFileDialog();
@@ -46,7 +46,7 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
             }
         }
 
-        public static View.AddFTPRepositoryView getInstance()
+        public static View.AddFTPRepositoryView GetInstance()
         {
             return AddFtpView = new View.AddFTPRepositoryView();
         }
@@ -63,8 +63,8 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
 
         public RepositorySettingViewModel()
         {
-            AddLocalStorageCommand = new DelegateCommand(arg => addLocalStorage());
-            ShowFTPStorageCommand = new DelegateCommand(arg => getInstance().ShowDialog());
+            AddLocalStorageCommand = new DelegateCommand(arg => AddLocalStorage());
+            ShowFtpStorageCommand = new DelegateCommand(arg => GetInstance().ShowDialog());
         }
     }
 }

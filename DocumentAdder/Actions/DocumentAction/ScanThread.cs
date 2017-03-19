@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 namespace DocumentAdder.Actions.DocumentAction
 {
     public class ScanThread {
-        
+
     }
 }

@@ -31,7 +31,20 @@
             Grid.ColumnSpan="2"
             Margin="5"
             DisplayMemberPath="StoragePath"
-            ItemsSource="{Binding Path=SettingModel.CollectionPaths, Mode=TwoWay}" />
+            SelectionMode="Extended">
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem
+                        x:Name="RepositoryContextDeleteBtn"
+                        Click="RepositoryContextDeleteBtn_OnClick"
+                        Header="{x:Static res:Resources.RepositoryStngContextBtnDelete}" />
+                    <MenuItem
+                        x:Name="RepositoryContextCopyBtn"
+                        Click="RepositoryContextCopyBtn_OnClick"
+                        Header="{x:Static res:Resources.RepositoryStngContextBtnCopy}" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
+        </ListBox>
         <StackPanel
             Grid.Row="2"
             Grid.ColumnSpan="2"
@@ -51,7 +64,7 @@
                 MinWidth="100"
                 MinHeight="28"
                 Margin="0,0,0,0"
-                Command="{Binding Path=ShowFTPStorageCommand}"
+                Command="{Binding Path=ShowFtpStorageCommand}"
                 Content="{x:Static res:Resources.RepositoryStngAddFtpBtn}" />
         </StackPanel>
     </Grid>

@@ -12,7 +12,6 @@ namespace DocumentAdder.Model.SettingsModels
     {
         #region Fields
         private uint _scanTimeout;
-        private ObservableCollection<RepositoryPath> _collectionPaths;
         #endregion
 
         #region Properties       
@@ -43,7 +42,7 @@ namespace DocumentAdder.Model.SettingsModels
             {
                 return ProgramSettings.CollectionsPaths;
             }
-            private set
+            set
             {
                 ProgramSettings.CollectionsPaths = value;
                 NotifyPropertyChanged();
@@ -58,7 +57,6 @@ namespace DocumentAdder.Model.SettingsModels
         /// </summary>
         public RepositorySettingModel()
         {            
-            _collectionPaths = new ObservableCollection<RepositoryPath>();
         }        
     }
 }

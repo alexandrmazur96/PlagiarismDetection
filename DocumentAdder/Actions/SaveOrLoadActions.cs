@@ -21,12 +21,19 @@ namespace DocumentAdder.Actions
         /// </summary>
         public static void SaveSettings()
         {
-            using (StreamWriter sw = new StreamWriter(SettingsPath))
+            try
             {
-                using (JsonWriter jw = new JsonTextWriter(sw))
+                using (var sw = new StreamWriter(SettingsPath))
                 {
-                    Serializer.Serialize(jw, ProgramSettings.GetInstance());
+                    using (JsonWriter jw = new JsonTextWriter(sw))
+                    {
+                        Serializer.Serialize(jw, ProgramSettings.GetInstance());
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Скорее всего, у программы нету прав для записи. " + ex.Message);
             }
         }
 
