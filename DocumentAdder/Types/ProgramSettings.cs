@@ -54,6 +54,12 @@ namespace DocumentAdder.Types
 
         [DataMember]
         public string FileTypes { get; set; }
+
+        [DataMember]
+        public string ReplacePath { get; set; }
+
+        [DataMember]
+        public int ThreadCount { get; set; }
         #endregion
         #endregion
 
@@ -86,14 +92,13 @@ namespace DocumentAdder.Types
                 _instanceSettings = new ProgramSettings();
                 return _instanceSettings;
             }
-            else
-            {
-                return _instanceSettings;
-            }
+            return _instanceSettings;
         }
+
 
         public static void LoadSettings(ProgramSettings loadedProgramSettings)
         {
+            //other settings
             ProgramSettings.GetInstance().IsDoc = loadedProgramSettings.IsDoc;
             ProgramSettings.GetInstance().IsDocx = loadedProgramSettings.IsDocx;
             ProgramSettings.GetInstance().IsRtf = loadedProgramSettings.IsRtf;
@@ -101,11 +106,16 @@ namespace DocumentAdder.Types
             ProgramSettings.GetInstance().IsPdf = loadedProgramSettings.IsPdf;
             ProgramSettings.GetInstance().IsTxt = loadedProgramSettings.IsTxt;
             ProgramSettings.GetInstance().FileTypes = loadedProgramSettings.FileTypes;
+            ProgramSettings.GetInstance().ReplacePath = loadedProgramSettings.ReplacePath;
+            ProgramSettings.GetInstance().ThreadCount = loadedProgramSettings.ThreadCount;
+
+            //database and repo
             ProgramSettings.GetInstance().CollectionsPaths = loadedProgramSettings.CollectionsPaths;
             ProgramSettings.GetInstance().ConnectionString = loadedProgramSettings.ConnectionString;
             ProgramSettings.GetInstance().DataBaseName = loadedProgramSettings.DataBaseName;
             ProgramSettings.GetInstance().Login = loadedProgramSettings.Login;
             ProgramSettings.GetInstance().Password = loadedProgramSettings.Password;
+            
         }
     }
 }

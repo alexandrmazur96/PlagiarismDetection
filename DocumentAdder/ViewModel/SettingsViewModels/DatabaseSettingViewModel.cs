@@ -21,8 +21,6 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
 
         public DatabaseSettingViewModel()
         {
-            DatabaseModel.ConnectionString = "mongodb://localhost";
-            DatabaseModel.DatabaseName = "test";            
         }
     }
 }

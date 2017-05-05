@@ -23,11 +23,11 @@ namespace DocumentAdder.ViewModel
             FTPRepositoryModel = new Model.AddFTPRepositoryModel();
 
             CancelCommand = new Helpers.DelegateCommand(arg => RepositorySettingViewModel.AddFtpView.Close());
-            AddCommand = new Helpers.DelegateCommand(arg => addRepository());
+            AddCommand = new Helpers.DelegateCommand(arg => AddRepository());
         }
 
         //Вроде работает! (на самом деле нет, а впрочем...хер с ним)
-        private void addRepository()
+        private void AddRepository()
         {
             if(FTPRepositoryModel.FTPPath == null)
             {
@@ -52,7 +52,7 @@ namespace DocumentAdder.ViewModel
             try
             {
                 //Проверяем на валидность ftp-путь, если путь валидный
-                if (Verifications.isFtpValid(FTPRepositoryModel.FTPPath))
+                if (Verifications.IsFtpValid(FTPRepositoryModel.FTPPath))
                 {
                     //и такого нету в коллекции путей
                     if (!RepositorySettingViewModel.RepositoryModel.CollectionPaths.RemoteStorageContains(FTPRepositoryModel.FTPPath))

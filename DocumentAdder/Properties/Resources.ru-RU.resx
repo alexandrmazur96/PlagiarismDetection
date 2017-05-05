@@ -153,6 +153,24 @@
   <data name="DatabaseStngPassword" xml:space="preserve">
     <value>Пароль:</value>
   </data>
+  <data name="LogAllSaveToFile" xml:space="preserve">
+    <value>Сохранить логи за все время в файл</value>
+  </data>
+  <data name="LogCleanBtn" xml:space="preserve">
+    <value>Очистить логи</value>
+  </data>
+  <data name="LogClipboardBtn" xml:space="preserve">
+    <value>Сохранить в буфер обмена</value>
+  </data>
+  <data name="LogListViewDate" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="LogListViewMessage" xml:space="preserve">
+    <value>Сообщение</value>
+  </data>
+  <data name="LogSaveToFileBtn" xml:space="preserve">
+    <value>Сохранить в файл</value>
+  </data>
   <data name="MainDataGridFileAddDate" xml:space="preserve">
     <value>Дата добавления</value>
   </data>
@@ -164,6 +182,9 @@
   </data>
   <data name="MainFirstTabHeader" xml:space="preserve">
     <value>Стартовая</value>
+  </data>
+  <data name="MainLogTabHeader" xml:space="preserve">
+    <value>Логи</value>
   </data>
   <data name="MainRestartBtnName" xml:space="preserve">
     <value>Рестарт</value>
@@ -182,6 +203,15 @@
   </data>
   <data name="OtherSettingsExtensions" xml:space="preserve">
     <value>Выберите необходимые расширение файла</value>
+  </data>
+  <data name="OtherSettingsMoveDirBtn" xml:space="preserve">
+    <value>Выбрать папку</value>
+  </data>
+  <data name="OtherSettingsMoveDirTitle" xml:space="preserve">
+    <value>Директория, куда будут перемещаться файлы:</value>
+  </data>
+  <data name="OtherSettingsThreadCnt" xml:space="preserve">
+    <value>Количество одновременно выполняющихся потоков</value>
   </data>
   <data name="RepositoryStngAddFtpBtn" xml:space="preserve">
     <value>Добавить FTP-хранилище</value>

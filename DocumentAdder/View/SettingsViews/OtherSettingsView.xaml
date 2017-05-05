@@ -19,7 +19,7 @@
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="2*" />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
@@ -64,6 +64,41 @@
                 Margin="0,0,10,0"
                 Content="*.pdf"
                 IsChecked="{Binding Path=OtherModel.IsPdf}" />
+        </StackPanel>
+        <StackPanel
+            Grid.Row="2"
+            Grid.Column="0"
+            Orientation="Vertical">
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="14"
+                Text="{x:Static res:Resources.OtherSettingsMoveDirTitle}" />
+            <TextBlock
+                Margin="0,2,0,0"
+                HorizontalAlignment="Center"
+                FontSize="13"
+                Text="{Binding Path=OtherModel.ReplacePath}" />
+            <Button
+                Margin="0,6,0,0"
+                Padding="5"
+                HorizontalAlignment="Center"
+                Command="{Binding Path=AddMoveDirectoryCommand}"
+                Content="{x:Static res:Resources.OtherSettingsMoveDirBtn}" />
+        </StackPanel>
+        <StackPanel
+            Grid.Row="3"
+            HorizontalAlignment="Stretch"
+            Orientation="Horizontal">
+            <TextBlock
+                Margin="5,0,0,0"
+                VerticalAlignment="Center"
+                Text="{x:Static res:Resources.OtherSettingsThreadCnt}" />
+            <TextBox
+                MinWidth="100"
+                Margin="10,0,0,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Text="{Binding Path=OtherModel.ThreadCount}" />
         </StackPanel>
     </Grid>
 </Page>

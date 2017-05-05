@@ -14,7 +14,6 @@ namespace DocumentAdder.Model
         private ObservableCollection<Document> _documentCollections;
         private bool _isStartBtnEnabled;
         private bool _isStopBtnEnabled;
-        private bool _isRestartBtnEnabled;
         #endregion
 
         #region Properties
@@ -70,23 +69,6 @@ namespace DocumentAdder.Model
                 NotifyPropertyChanged();
             }
         }
-
-        /// <summary>
-        /// Показывает, доступна ли кнопка "Рестарт" в данный момент
-        /// <value>IsRestartBtnEnabled свойство возвращает значение типа bool поля, _isRestartBtnEnabled</value>
-        /// </summary>
-        public bool IsRestartBtnEnabled
-        {
-            get
-            {
-                return _isRestartBtnEnabled;
-            }
-            set
-            {
-                _isRestartBtnEnabled = value;
-                NotifyPropertyChanged();
-            }
-        }
         #endregion
 
         /// <summary>
@@ -97,7 +79,6 @@ namespace DocumentAdder.Model
             _documentCollections = new ObservableCollection<Document>();
             _isStartBtnEnabled = true;
             _isStopBtnEnabled = false;
-            _isRestartBtnEnabled = false;
         }
 
     }

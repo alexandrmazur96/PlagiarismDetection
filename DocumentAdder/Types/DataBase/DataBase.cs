@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using global::DocumentAdder.ViewModel.SettingsViewModels;
-using System.Security.Cryptography;
+using DocumentAdder.Actions.DocumentAction;
+using DocumentAdder.ViewModel.SettingsViewModels;
+using DocumentAdder.Helpers;
+using DocumentAdder.ViewModel;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Clusters;
+using MongoDB.Driver.Core.Connections;
+using MongoDB.Driver.Core.Servers;
 
 namespace DocumentAdder.Types.DataBase
 {
@@ -17,14 +22,19 @@ namespace DocumentAdder.Types.DataBase
         private string _password;
 
         //private fields for class working        
-        private MongoUrlBuilder _mongoUrl;        
+        private MongoUrlBuilder _mongoUrl;
         private MongoClientSettings _clientSettings;
         private MongoClient _client;
+        private MongoServer _server;
         private IMongoDatabase _database;
+
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Возвращает/задает логин для подключения к MongoDb.
+        /// </summary>
         public string Login
         {
             get
@@ -38,6 +48,9 @@ namespace DocumentAdder.Types.DataBase
             }
         }
 
+        /// <summary>
+        /// Возвращает/задает пароль для подключения к MongoDb.
+        /// </summary>
         public string Password
         {
             get
@@ -52,7 +65,7 @@ namespace DocumentAdder.Types.DataBase
         }
 
         /// <summary>
-        /// Возвращает/задает строку подключения к MongoDB
+        /// Возвращает/задает строку подключения к MongoDb.
         /// </summary>
         public string ConnectionString
         {
@@ -86,13 +99,12 @@ namespace DocumentAdder.Types.DataBase
                 {
                     //создаем настройки только со строкой сервера
                     _clientSettings = new MongoClientSettings
-                    {                    
-                        Server = _mongoUrl.Server,                        
+                    {
+                        Server = _mongoUrl.Server,
+                        ServerSelectionTimeout = TimeSpan.FromSeconds(5)
                     };
-
                     //инициализируем MongoClient с этими настройками
                     _client = new MongoClient(_clientSettings);
-
                     //получаем выбранную базу данных
                     _database = _client.GetDatabase(DatabaseSettingViewModel.DatabaseModel.DatabaseName);
 
@@ -111,13 +123,12 @@ namespace DocumentAdder.Types.DataBase
                         Credentials = new[]
                         {
                         MongoCredential.CreateCredential(DatabaseSettingViewModel.DatabaseModel.DatabaseName,
-                        _login, _password)
-                    },
-                        Server = _mongoUrl.Server
+                        _login, _password)                        
+                        },
+                        Server = _mongoUrl.Server,
+                        ServerSelectionTimeout = TimeSpan.FromSeconds(5)
                     };
-
                     _client = new MongoClient(_clientSettings);
-
                     _database = _client.GetDatabase(DatabaseSettingViewModel.DatabaseModel.DatabaseName);
 
                 }
@@ -125,60 +136,512 @@ namespace DocumentAdder.Types.DataBase
                 {
                     System.Windows.MessageBox.Show(e.Source + " " + e.Message);
                 }
-            }    
-                    
+            }
+
         }
-        
+
+        /// <summary>
+        /// Устанавливает новый объект MongoServer,
+        /// </summary>
+        private void SetServer()
+        {
+            _server = new MongoServer(MongoServerSettings.FromClientSettings(_clientSettings));
+        }
+
+        /// <summary>
+        /// Асинхронно проверяет наличие подключения к MongoDb.
+        /// </summary>
+        /// <returns>Состояние подключения</returns>
+        public async Task<bool> CheckMongoConnection()
+        {
+            try
+            {
+                var databases = _client.ListDatabasesAsync().Result;
+                await databases.MoveNextAsync();
+                return _client.Cluster.Description.State == ClusterState.Connected;
+            }
+            catch (Exception mce)
+            {
+                await Console.Error.WriteLineAsync(mce.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Вставка данных о файле в MongoDB.
+        /// </summary>
+        /// <param name="fileName">Имя файла.</param>
+        /// <param name="filePath">Путь к файлу.</param>
+        /// <param name="fileExtension">Тип файла.</param>
+        private void InsertFileData(string fileName, string filePath, string fileExtension)
+        {
+            //получаем коллекцию с файлами.
+            var fileCollection = _database.GetCollection<FileCollection>("filesCollection");
+
+            var fileData = new FileCollection
+            {
+                FileName = fileName,
+                FilePath = filePath,
+                FileType = fileExtension
+            };
+
+            fileCollection.InsertOne(fileData);
+        }
+
+        /// <summary>
+        /// Асинхронная вставка данных о файле в MongoDB.
+        /// </summary>
+        /// <param name="fileName">Имя файла.</param>
+        /// <param name="filePath">Путь к файлу.</param>
+        /// <param name="fileExtension">Тип файла.</param>
+        /// <returns></returns>
+        private async Task InsertFileDataAsync(string fileName, string filePath, string fileExtension)
+        {
+            //получаем коллекцию с файлами.
+            var fileCollection = _database.GetCollection<FileCollection>("filesCollection");
+
+            var fileData = new FileCollection
+            {
+                FileName = fileName,
+                FilePath = filePath,
+                FileType = fileExtension
+            };
+
+            await fileCollection.InsertOneAsync(fileData);
+        }
+
+        /// <summary>
+        /// Вставка данных о документе в MongoDB.
+        /// </summary>
+        /// <param name="documentHash">Хеш-сумма документа.</param>
+        /// <param name="documentAuthorGroup">Группа автора документа.</param>
+        /// <param name="documentTfVector">TF-вектор документа.</param>
+        /// <param name="documentAddTime">Дата добавления документа.</param>
+        /// <param name="documentTokens">Все очищенные слова документа.</param>
+        /// <param name="documentAuthor">Автор документа.</param>
+        private void InsertDocumentData(string documentHash, string documentAuthor, string documentAuthorGroup, Dictionary<string, double> documentTfVector, DateTime documentAddTime, string[] documentTokens)
+        {
+            //Для связывания коллекций нам нужно хранить Id из одной коллекции в другой 
+            //как в реляционных СУБД, только без жесткого контроля за этим.
+            var fileCollection = _database.GetCollection<FileCollection>("filesCollection");
+
+            //получаем последний добавленый файл (файл в коллекцию вставляется ПЕРЕД вызовом этого метода)
+            var filesData = fileCollection.Find(new BsonDocument()).ToList();
+            var lastFile = filesData[filesData.Count - 1];
+
+            var documentCollection = _database.GetCollection<DocumentCollection>("documentCollection");
+
+            var documentData = new DocumentCollection
+            {
+                DocumentHash = documentHash,
+                DocumentAddTime = documentAddTime,
+                DocumentTfVector = documentTfVector,
+                DocumentTokens = documentTokens,
+                DocumentAuthor = documentAuthor,
+                DocumentAuthorGroup = documentAuthorGroup,
+                FileId = lastFile.FileId
+            };
+
+            documentCollection.InsertOne(documentData);
+        }
+
+        /// <summary>
+        /// Асинхронная вставка данных о документе в MongoDB.
+        /// </summary>
+        /// <param name="documentHash">Хеш-сумма документа.</param>
+        /// <param name="documentTfVector">TF-вектор документа.</param>
+        /// <param name="documentAddTime">Дата добавления документа.</param>
+        /// <param name="documentTokens">Все очищенные слова документа.</param>
+        /// <returns>Task, для асинхронности.</returns>
+        private async Task InsertDocumentDataAsync(string documentHash, string documentAuthor, string documentAuthorGroup, Dictionary<string, double> documentTfVector, DateTime documentAddTime, string[] documentTokens)
+        {
+            //Для связывания коллекций нам нужно хранить Id из одной коллекции в другой 
+            //как в реляционных СУБД, только без жесткого контроля за этим.
+            var fileCollection = _database.GetCollection<FileCollection>("filesCollection");
+            //получаем последний добавленый файл (файл в коллекцию вставляется ПЕРЕД вызовом этого метода)
+            var filesData = await fileCollection.Find(new BsonDocument()).ToListAsync();
+            var lastFile = filesData[filesData.Count - 1];
+
+            var documentCollection = _database.GetCollection<DocumentCollection>("documentCollection");
+
+            var documentData = new DocumentCollection
+            {
+                DocumentHash = documentHash,
+                DocumentAddTime = documentAddTime,
+                DocumentTfVector = documentTfVector,
+                DocumentTokens = documentTokens,
+                DocumentAuthor = documentAuthor,
+                DocumentAuthorGroup = documentAuthorGroup,
+                FileId = lastFile.FileId
+            };
+
+            await documentCollection.InsertOneAsync(documentData);
+        }
         #endregion
 
         #region Public methods
 
-        public void InsertDocument()
+        /// <summary>
+        /// Вставляет документ в MongoDB. 
+        /// </summary>
+        /// <param name="document">Документ типа Document.</param>
+        public void InsertDocument(Document document)
         {
-            //gets bytes data from file
-            byte[] fileByte = new byte[256];
-
-            //using sha384 algorythm to hashing the file and insert this into db
-            SHA384 hashObj = new SHA384Managed();
-            byte[] fileHash = hashObj.ComputeHash(fileByte);
+            if (document != null)
+            {
+                InsertFileData(document.DocumentName, document.DocumentPath, document.DocumentType);
+                InsertDocumentData(document.DocumentHash, document.DocumentAuthor, document.DocumentAuthorGroup,
+                    document.DocumentTfVector, document.AddTime, document.DocumentTokens);
+                UpdateOrInsertIdfVector(DocumentActions.MakeIdfVector(document.DocumentTfVector));
+                LogViewModel.AddNewLog("Документ " + document.DocumentName + " добавлен!", DateTime.Now);
+            }
+            else
+            {
+                LogViewModel.AddNewLog("Документ не был передан для вставки!", DateTime.Now, LogType.Error);
+            }
         }
 
         /// <summary>
-        /// Асинхронно получает данные с определенным условием выборки
+        /// Асинхронно вставляет документ в MongoDB.
         /// </summary>
-        /// <param name="_predicate">Услови для выборки, необязательный параметр</param>
-        public void GetDataAsync(string _predicate = null)
+        /// <param name="document">Документ типа Document.</param>
+        public async Task InsertDocumentAsync(Document document)
         {
-            
+            if (document != null)
+            {
+
+                await InsertFileDataAsync(document.DocumentName, document.DocumentPath, document.DocumentType);
+                await InsertDocumentDataAsync(document.DocumentHash, document.DocumentAuthor, document.DocumentAuthorGroup,
+                    document.DocumentTfVector, document.AddTime, document.DocumentTokens);
+                await UpdateOrInsertIdfVectorAsync(await DocumentActions.MakeIdfVectorAsync(document.DocumentTfVector));
+                LogViewModel.AddNewLog("Документ " + document.DocumentName + " добавлен!", DateTime.Now);
+            }
+            else
+            {
+                LogViewModel.AddNewLog("Документ не был передан для вставки!", DateTime.Now, LogType.Error);
+            }
         }
 
         /// <summary>
-        /// Получает данные с определенным условием выборки
+        /// Асинхронно помещает логи в MongoDB.
         /// </summary>
-        /// <param name="_predicate">Услови для выборки, необязательный параметр</param>
-        public void GetData(string _predicate = null)
+        /// <param name="logs">Коллекция с логами.</param>
+        public async Task InsertLogAsync(List<Log> logs)
         {
+            if (await CheckMongoConnection())
+            {
 
+                if (logs.Count <= 0)
+                {
+                    return;
+                }
+
+                var logCollection = _database.GetCollection<BsonDocument>("logCollection");
+
+                var bsonLogs = logs.Select(log => new BsonDocument
+                {
+                    {"Date", log.Date},
+                    {"Message", log.Message},
+                    {"LogType", log.LogType}
+                }).ToList();
+
+                await logCollection.InsertManyAsync(bsonLogs);
+            }
+            else
+            {
+                await Console.Error.WriteLineAsync(@"Не удалось вставить лог! Отсутствует подключение к серверу MongoDb!");
+                LogViewModel.AddNewLog("Не удалось подключиться к серверу MongoDb! Сохранение логов не производится!", DateTime.Now, LogType.Error);
+            }
         }
 
-        public void ChooseDatabase(string _databaseName)
+        /// <summary>
+        /// Помещает логи в MongoDB.
+        /// </summary>
+        /// <param name="logs">Коллекция с логами.</param>
+        public void InsertLog(List<Log> logs)
         {
-            _database = _client.GetDatabase(_databaseName);
+            if (CheckMongoConnection().Result)
+            {
+                if (logs.Count <= 0)
+                {
+                    return;
+                }
+                var logCollection = _database.GetCollection<BsonDocument>("logCollection");
+
+                var bsonLogs = logs.Select(log => new BsonDocument
+                {
+                    {"Date", log.Date},
+                    {"Message", log.Message},
+                    {"LogType", log.LogType}
+                }).ToList();
+
+                logCollection.InsertMany(bsonLogs);
+            }
+            else
+            {
+                Console.Error.WriteLineAsync(@"Не удалось вставить лог! Отсутствует подключение к серверу MongoDb!");
+                LogViewModel.AddNewLog("Не удалось подключиться к серверу MongoDb! Сохранение логов не производится!", DateTime.Now, LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// Асинхронно возвращает данные с определенным условием выборки.
+        /// </summary>
+        /// <param name="predicateDoc">Предикат поиска для документов.</param>
+        /// <param name="predicateFile">Предикат поиска для файлов.</param>
+        public async Task<List<Document>> GetAllDocumentsAsync(BsonDocument predicateDoc = null, BsonDocument predicateFile = null)
+        {
+            if (predicateDoc == null)
+            {
+                predicateDoc = new BsonDocument();
+            }
+
+            if (predicateFile == null)
+            {
+                predicateFile = new BsonDocument();
+            }
+
+            var documentCollection = _database.GetCollection<DocumentCollection>("documentCollection");
+            var fileCollection = _database.GetCollection<FileCollection>("filesCollection");
+
+            var documentsData = await documentCollection.Find(predicateDoc).ToListAsync();
+            var filesData = await fileCollection.Find(predicateFile).ToListAsync();
+
+            var documentsList = new List<Document>();
+            for (int i = 0; i < documentsData.Count; i++)
+            {
+                documentsList.Insert(i, new Document(
+                    filesData[i].FileName,
+                    documentsData[i].DocumentAuthor,
+                    documentsData[i].DocumentAuthorGroup,
+                    filesData[i].FilePath,
+                    filesData[i].FileType,
+                    documentsData[i].DocumentHash,
+                    documentsData[i].DocumentTokens,
+                    documentsData[i].DocumentTfVector,
+                    documentsData[i].DocumentAddTime));
+            }
+            return documentsList;
+        }
+
+        /// <summary>
+        /// Возвращает данные с определенным условием выборки.
+        /// </summary>
+        /// <param name="predicateDoc">Предикат поиска для документов.</param>
+        /// <param name="predicateFile">Предикат поиска для файлов.</param>
+        public List<Document> GetAllDocuments(BsonDocument predicateDoc = null, BsonDocument predicateFile = null)
+        {
+            if (predicateDoc == null)
+            {
+                predicateDoc = new BsonDocument();
+            }
+
+            if (predicateFile == null)
+            {
+                predicateFile = new BsonDocument();
+            }
+
+            var documentCollection = _database.GetCollection<DocumentCollection>("documentCollection");
+            var fileCollection = _database.GetCollection<FileCollection>("filesCollection");
+
+            var documentsData = documentCollection.Find(predicateDoc).ToList();
+            var filesData = fileCollection.Find(predicateFile).ToList();
+
+            var documentsList = new List<Document>();
+            for (int i = 0; i < documentsData.Count; i++)
+            {
+                documentsList.Insert(i, new Document(
+                    filesData[i].FileName,
+                    documentsData[i].DocumentAuthor,
+                    documentsData[i].DocumentAuthorGroup,
+                    filesData[i].FilePath,
+                    filesData[i].FileType,
+                    documentsData[i].DocumentHash,
+                    documentsData[i].DocumentTokens,
+                    documentsData[i].DocumentTfVector,
+                    documentsData[i].DocumentAddTime));
+            }
+            return documentsList;
+        }
+
+
+        /// <summary>
+        /// Возвращает IDF-вектор из MongoDb.
+        /// </summary>
+        /// <returns>IDF-вектор.</returns>
+        public List<IdfItem> GetIdfVector()
+        {
+            var idfCollection = _database.GetCollection<IdfItem>("idfVectorCollection");
+            return idfCollection.Find(new BsonDocument()).ToList();
+        }
+
+        /// <summary>
+        /// Асинхронно возвращает IDF-вектор из MongoDb.
+        /// </summary>
+        /// <returns>IDF-вектор.</returns>
+        public async Task<List<IdfItem>> GetIdfVectorAsync()
+        {
+            var idfCollection = _database.GetCollection<IdfItem>("idfVectorCollection");
+            return await idfCollection.Find(new BsonDocument()).ToListAsync();
+        }
+
+        /// <summary>
+        /// Удаляет коллекцию IDF-вектора из MongoDb.
+        /// </summary>
+        public void UpdateOrInsertIdfVector(List<IdfItem> newItems)
+        {
+            var idfCollection = _database.GetCollection<IdfItem>("idfVectorCollection");
+
+            foreach (var newItem in newItems)
+            {
+                var filter = Builders<IdfItem>.Filter.Eq("Token", newItem.Token);
+                var updateSet = Builders<IdfItem>.Update.Set("IdfValue", newItem.IdfValue);
+                if (idfCollection.Find(filter).Count() != 0)
+                {
+                    idfCollection.UpdateMany(filter, updateSet);
+                }
+                else
+                {
+                    idfCollection.InsertOne(newItem);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Асинхронно удаляет коллекцию IDF-вектора из MongoDb.
+        /// </summary>
+        /// <returns>void</returns>
+        public async Task UpdateOrInsertIdfVectorAsync(List<IdfItem> newItems)
+        {
+            var idfCollection = _database.GetCollection<IdfItem>("idfVectorCollection");
+
+            foreach (var newItem in newItems)
+            {
+                var filter = Builders<IdfItem>.Filter.Eq("Token", newItem.Token);
+                var updateSet = Builders<IdfItem>.Update.Set("IdfValue", newItem.IdfValue);
+                if (idfCollection.Find(filter).Any())
+                {
+                    await idfCollection.UpdateManyAsync(filter, updateSet);
+                }
+                else
+                {
+                    await idfCollection.InsertOneAsync(newItem);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Вставляет IDF-вектор в MongoDb.
+        /// </summary>
+        /// <param name="idfVector">IDF-вектор, который нужно вставить.</param>
+        public void InsertIdfVector(Dictionary<string, double> idfVector)
+        {
+            var idfCollection = _database.GetCollection<IdfItem>("idfVectorCollection");
+            var idfList = idfVector.Select(idf => new IdfItem
+            {
+                Token = idf.Key,
+                IdfValue = idf.Value,
+                IdfId = default(ObjectId)
+            }).ToList();
+            idfCollection.InsertMany(idfList);
+        }
+
+        /// <summary>
+        /// Асинхронно вставляет IDF-вектор в MongoDb.
+        /// </summary>
+        /// <param name="idfVector">IDF-вектор, который нужно вставить.</param>
+        /// <returns>void</returns>
+        public async Task InsertIdfVectorAsync(Dictionary<string, double> idfVector)
+        {
+            var idfCollection = _database.GetCollection<IdfItem>("idfVectorCollection");
+            var idfList = idfVector.Select(idf => new IdfItem
+            {
+                Token = idf.Key,
+                IdfValue = idf.Value,
+                IdfId = default(ObjectId)
+            }).ToList();
+            await idfCollection.InsertManyAsync(idfList);
+        }
+
+        /// <summary>
+        /// Получает все логи из MongoDB.
+        /// </summary>
+        /// <returns>Коллекция с логами приложения за все время.</returns>
+        public List<Log> GetAllLogs()
+        {
+            if (CheckMongoConnection().Result)
+            {
+                var logCollection = _database.GetCollection<Log>("logCollection");
+
+                var logsFromDb = logCollection.Find(new BsonDocument()).ToList();
+
+                return logsFromDb.ToList();
+            }
+            LogViewModel.AddNewLog("Не удалось подключиться к серверу MongoDb! Не удалось извлечь логи!", DateTime.Now, LogType.Error);
+            return null;
+        }
+
+        /// <summary>
+        /// Асинхронно получает все логи из MongoDB.
+        /// </summary>
+        /// <returns>Коллекция с логами приложения за все время.</returns>
+        public async Task<List<Log>> GetAllLogsAsync()
+        {
+            if (await CheckMongoConnection())
+            {
+                var logCollection = _database.GetCollection<Log>("logCollection");
+
+                var logsFromDb = await logCollection.FindAsync(new BsonDocument());
+
+                return logsFromDb.ToList();
+            }
+            LogViewModel.AddNewLog("Не удалось подключиться к серверу MongoDb! Не удалось извлечь логи!", DateTime.Now, LogType.Error);
+            return null;
+        }
+
+        /// <summary>
+        /// Смена базы данных MongoDB.
+        /// </summary>
+        /// <param name="databaseName">Название базы данных в сервере MongoDB.</param>
+        public void ChooseDatabase(string databaseName)
+        {
+            if (CheckMongoConnection().Result)
+            {
+                _database = _client.GetDatabase(databaseName);
+            }
+            else
+            {
+                LogViewModel.AddNewLog("Не удалось подключиться к серверу MongoDb! Не удалось выбрать БД!", DateTime.Now, LogType.Error);                
+            }
         }
 
         #endregion
         #endregion
 
         /// <summary>
-        /// Создает объект datebase.
+        /// Создает объект DataBase.
         /// </summary>
-        public DataBase()
+        private DataBase()
         {
             _connectionString = DatabaseSettingViewModel.DatabaseModel.ConnectionString;
             _mongoUrl = new MongoUrlBuilder(_connectionString);
             _login = DatabaseSettingViewModel.DatabaseModel.Login;
             _password = DatabaseSettingViewModel.DatabaseModel.Password ?? "";
             SetClient();
+            //SetServer();
+        }
+
+        private static DataBase _dbInstance;
+
+        /// <summary>
+        /// Нужен для реализации паттерна Singleton.
+        /// </summary>
+        /// <returns>DataBase instance.</returns>
+        public static DataBase GetInstance()
+        {
+            if (_dbInstance != null) return _dbInstance;
+            _dbInstance = new DataBase();
+            return _dbInstance;
         }
     }
 }

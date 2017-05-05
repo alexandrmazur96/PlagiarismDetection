@@ -24,8 +24,6 @@ namespace DocumentAdder.Helpers
         /// <returns>Трансформированную строку с расширениями файлов, которые нужно обрабатывать</returns>
         public static string FlagToExtensions()
         {
-            //private string _fileTypes = "*.txt, *.doc, *.docx, *.rtf, *.otd, *.pdf";
-
             string neededFileExtensions = "";
             if (ProgramSettings.GetInstance().IsDoc)
             {

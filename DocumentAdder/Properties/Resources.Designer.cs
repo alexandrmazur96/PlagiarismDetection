@@ -169,6 +169,60 @@ namespace DocumentAdder.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Зберегти логи за весь час в файл.
+        /// </summary>
+        public static string LogAllSaveToFile {
+            get {
+                return ResourceManager.GetString("LogAllSaveToFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Очистити логи.
+        /// </summary>
+        public static string LogCleanBtn {
+            get {
+                return ResourceManager.GetString("LogCleanBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Зберегти в буфер обміну.
+        /// </summary>
+        public static string LogClipboardBtn {
+            get {
+                return ResourceManager.GetString("LogClipboardBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Дата.
+        /// </summary>
+        public static string LogListViewDate {
+            get {
+                return ResourceManager.GetString("LogListViewDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Повідомлення.
+        /// </summary>
+        public static string LogListViewMessage {
+            get {
+                return ResourceManager.GetString("LogListViewMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Зберегти в файл.
+        /// </summary>
+        public static string LogSaveToFileBtn {
+            get {
+                return ResourceManager.GetString("LogSaveToFileBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Дата додавання.
         /// </summary>
         public static string MainDataGridFileAddDate {
@@ -201,6 +255,15 @@ namespace DocumentAdder.Properties {
         public static string MainFirstTabHeader {
             get {
                 return ResourceManager.GetString("MainFirstTabHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Логи.
+        /// </summary>
+        public static string MainLogTabHeader {
+            get {
+                return ResourceManager.GetString("MainLogTabHeader", resourceCulture);
             }
         }
         
@@ -255,6 +318,33 @@ namespace DocumentAdder.Properties {
         public static string OtherSettingsExtensions {
             get {
                 return ResourceManager.GetString("OtherSettingsExtensions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Обрати теку.
+        /// </summary>
+        public static string OtherSettingsMoveDirBtn {
+            get {
+                return ResourceManager.GetString("OtherSettingsMoveDirBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Директорія, куди будуть переміщуватись файли:.
+        /// </summary>
+        public static string OtherSettingsMoveDirTitle {
+            get {
+                return ResourceManager.GetString("OtherSettingsMoveDirTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Кількість одночасно виконуваних потоків.
+        /// </summary>
+        public static string OtherSettingsThreadCnt {
+            get {
+                return ResourceManager.GetString("OtherSettingsThreadCnt", resourceCulture);
             }
         }
         

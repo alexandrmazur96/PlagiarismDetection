@@ -31,11 +31,17 @@ namespace DocumentAdder.Helpers
         [DataMember]
         private string _documentType;
         [DataMember]
-        private string _documentTFVector;
-        [DataMember]
         private string _documentHash;
         [DataMember]
-        private DateTime _addTime;    
+        private string _documentAuthor;
+        [DataMember]
+        private string _documentAuthorGroup;
+        [DataMember]
+        private string[] _documentTokens;
+        [DataMember]
+        private Dictionary<string, double> _documentTfVector;
+        [DataMember]
+        private DateTime _addTime;
         #endregion
 
         #region Properties
@@ -54,6 +60,27 @@ namespace DocumentAdder.Helpers
             {
                 _documentName = value;
             }
+        }
+
+        /// <summary>
+        /// Возвращает автора документа
+        /// </summary>
+        public string DocumentAuthor
+        {
+            get { return _documentAuthor; }
+            set { _documentAuthor = value; }
+        }
+
+        /// <summary>
+        /// Возвращает группу автора документа
+        /// </summary>
+        public string DocumentAuthorGroup
+        {
+            get
+            {
+                return _documentAuthorGroup;
+            }
+            set { _documentAuthorGroup = value; }
         }
 
         /// <summary>
@@ -89,17 +116,26 @@ namespace DocumentAdder.Helpers
         }
 
         /// <summary>
+        /// Возвращает канонизированный текст документа.
+        /// </summary>
+        public string[] DocumentTokens
+        {
+            get { return _documentTokens; }
+            set { _documentTokens = value; }
+        }
+
+        /// <summary>
         /// Вектор документа 
         /// </summary>
-        public string DocumentTFVector
+        public Dictionary<string, double> DocumentTfVector
         {
             get
             {
-                return _documentTFVector;
+                return _documentTfVector;
             }
             set
             {
-                _documentTFVector = value;
+                _documentTfVector = value;
             }
         }
 
@@ -132,25 +168,31 @@ namespace DocumentAdder.Helpers
             {
                 _addTime = value;
             }
-        }               
+        }
         #endregion
 
         /// <summary>
         /// Создает новый объект, который преобретает необходимый вид для адекватной работы с документом
         /// </summary>
-        /// <param name="documentName">Имя документа</param>
-        /// <param name="documentPath">Путь к документу</param>
-        /// <param name="documentType">Тип документа</param>
-        /// <param name="documentHash">Хэш сумма файла документа</param>
-        /// <param name="documentTFVector">Вектор TF-значений для слов документа</param>
-        /// <param name="addTime">Дата добавления файла во внутреннее хранилище</param>
-        public Document(string documentName, string documentPath, string documentType, string documentHash, string documentTFVector, DateTime addTime)
+        /// <param name="documentName">Имя документа.</param>
+        /// <param name="documentAuthor">Автор документа.</param>
+        /// <param name="documentAuthorGroup">Группа автора документа.</param>
+        /// <param name="documentPath">Путь к документу.</param>
+        /// <param name="documentType">Тип документа.</param>
+        /// <param name="documentHash">Хэш сумма файла документа.</param>
+        /// <param name="documentTokens">Все слова документа.</param>
+        /// <param name="documentTFVector">Вектор TF-значений для слов документа.</param>
+        /// <param name="addTime">Дата добавления файла во внутреннее хранилище.</param>
+        public Document(string documentName, string documentAuthor, string documentAuthorGroup, string documentPath, string documentType, string documentHash, string[] documentTokens, Dictionary<string, double> documentTFVector, DateTime addTime)
         {
             this.DocumentName = documentName;
+            this.DocumentAuthor = documentAuthor;
+            this.DocumentAuthorGroup = documentAuthorGroup;
             this.DocumentPath = documentPath;
             this.DocumentType = documentType;
             this.DocumentHash = documentHash;
-            this.DocumentTFVector = documentTFVector;
+            this.DocumentTokens = documentTokens;
+            this.DocumentTfVector = documentTFVector;
             this.AddTime = addTime;
         }
     }

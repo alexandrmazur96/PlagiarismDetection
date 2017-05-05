@@ -2,6 +2,7 @@
 using DocumentAdder.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DocumentAdder.ViewModel;
 
 namespace DocumentAdder
 {
@@ -25,18 +27,20 @@ namespace DocumentAdder
         public MainWindow()
         {
             InitializeComponent();
+
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Actions.SaveOrLoadActions.SaveSettings();
+           await LogViewModel.PushLogToDbAsync();
         }
 
         private void SettingsListBox_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {           
-            var item = ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) as ListBoxItem;
-            var pages = item?.Content as Pages;
-            if (pages != null) SettingsFrame.Content = pages.PageRef;
+        {
+            Debug.Assert(e.OriginalSource != null, "e.OriginalSource != null");
+            var item = ItemsControl.ContainerFromElement(sender as ListBox, (DependencyObject) e.OriginalSource) as ListBoxItem;
+            if (item?.Content is Pages pages) SettingsFrame.Content = pages.PageRef;
         }
     }
 }

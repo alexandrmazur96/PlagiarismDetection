@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DocumentAdder.Types;
 
 namespace DocumentAdder.Helpers
 {
@@ -75,6 +76,12 @@ namespace DocumentAdder.Helpers
             return tmpList;
         }
 
+        /// <summary>
+        /// Выводит коллекцию List с указанным заголовком @listName
+        /// </summary>
+        /// <typeparam name="T">Generic type (любой тип C#)</typeparam>
+        /// <param name="list">Индексатор, позволяющий вызвать этот метод прямо на объекте List'а</param>
+        /// <param name="listName">Название заголовка, необязательный параметр.</param>
         public static void ConsolePrintList<T>(this List<T> list, string listName = "LIST:")
         {
             Console.WriteLine("----------" + listName + "----------");
@@ -82,6 +89,17 @@ namespace DocumentAdder.Helpers
             {
                 Console.WriteLine(item.ToString());
             }
+        }
+
+        /// <summary>
+        /// Показывает, находится ли слово в коллекции List_IdfItem.
+        /// </summary>
+        /// <param name="list">Индексатор, позволяющий вызвать этот метод прямо на объекте List'a.</param>
+        /// <param name="token">Искомое слово.</param>
+        /// <returns>Результат bool нахождения слова в коллекции.</returns>
+        public static bool ContainsIdf(this List<IdfItem> list, string token)
+        {
+            return list.Any(idfItem => idfItem.Token.Equals(token));
         }
     }
 }

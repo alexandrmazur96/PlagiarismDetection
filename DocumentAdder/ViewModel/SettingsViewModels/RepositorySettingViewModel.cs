@@ -27,7 +27,7 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
             List<string> selectedPaths = null;
             var cofd = new CommonOpenFileDialog();
             cofd.IsFolderPicker = true;
-            cofd.Multiselect = true;
+            cofd.Multiselect = true;        
 
             if (cofd.ShowDialog() == CommonFileDialogResult.Ok)
             {

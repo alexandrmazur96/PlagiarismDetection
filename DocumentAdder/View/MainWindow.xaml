@@ -8,8 +8,8 @@
     xmlns:res="clr-namespace:DocumentAdder.Properties"
     xmlns:vm="clr-namespace:DocumentAdder.ViewModel"
     Title="Document Adder"
-    Width="585"
-    Height="340"
+    Width="700"
+    Height="360"
     Closing="Window_Closing"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -18,7 +18,88 @@
     </Window.DataContext>
     <Grid>
         <TabControl x:Name="TabControl" Margin="0">
-            <TabItem Header="{x:Static res:Resources.MainFirstTabHeader}">
+            <TabItem Header="{x:Static res:Resources.MainLogTabHeader}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="9*" />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <ListView ItemsSource="{Binding Path=LogVM.LogModelInstance.LogMessages}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Width="Auto" Header="{x:Static res:Resources.LogListViewDate}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=Date, StringFormat='{}{0:dd/MM/yyyy hh:mm:ss}'}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="Auto" Header="{x:Static res:Resources.LogListViewMessage}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Foreground="{Binding Path=MessageColor}" Text="{Binding Path=Message}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <StackPanel
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                        <Button
+                            Margin="0,0,5,0"
+                            Padding="3,0,3,0"
+                            Command="{Binding Path=LogVM.SaveToClipboardCommand}"
+                            Content="{x:Static res:Resources.LogClipboardBtn}" />
+                        <Button
+                            Margin="0,0,5,0"
+                            Padding="3,0,3,0"
+                            Command="{Binding Path=LogVM.SaveToFileCommand}"
+                            Content="{x:Static res:Resources.LogSaveToFileBtn}" />
+                        <Button
+                            Margin="0,0,5,0"
+                            Padding="3,0,3,0"
+                            Command="{Binding Path=LogVM.SaveAllToFileCommand}"
+                            Content="{x:Static res:Resources.LogAllSaveToFile}" />
+                        <Button
+                            Margin="0,0,5,0"
+                            Padding="3,0,3,0"
+                            Command="{Binding Path=LogVM.LogClearCommand}"
+                            Content="{x:Static res:Resources.LogCleanBtn}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal">
+                        <Button
+                            x:Name="StartBtn"
+                            MinWidth="75"
+                            Margin="10,0,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding Path=StartProgrammCommand}"
+                            Content="{x:Static res:Resources.MainStartBtnName}"
+                            IsEnabled="{Binding Path=DocumentAdderModel.IsStartBtnEnabled}" />
+                        <Button
+                            x:Name="StopBtn"
+                            MinWidth="75"
+                            Margin="10,0,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding Path=StopProgrammCommand}"
+                            Content="{x:Static res:Resources.MainStopBtnName}"
+                            IsEnabled="{Binding Path=DocumentAdderModel.IsStopBtnEnabled}" />
+                        <ProgressBar
+                            Width="250"
+                            MinHeight="20"
+                            Margin="100,0,0,0"
+                            VerticalAlignment="Center"
+                            Background="DarkOrchid"
+                            IsIndeterminate="{Binding DocumentAdderModel.IsStopBtnEnabled}" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <!--<TabItem Header="{x:Static res:Resources.MainFirstTabHeader}">
                 <Grid Margin="0,0,0,2" Background="#FFE5E5E5">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -59,6 +140,7 @@
                     </DataGrid>
                     <StackPanel
                         Grid.Row="2"
+                        Grid.Column="0"
                         Grid.ColumnSpan="2"
                         VerticalAlignment="Bottom"
                         Orientation="Horizontal">
@@ -77,19 +159,12 @@
                             Margin="10,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
+                            Command="{Binding Path=StopProgrammCommand}"
                             Content="{x:Static res:Resources.MainStopBtnName}"
                             IsEnabled="{Binding Path=DocumentAdderModel.IsStopBtnEnabled}" />
-                        <Button
-                            x:Name="RestartBtn"
-                            MinWidth="75"
-                            Margin="10,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Bottom"
-                            Content="{x:Static res:Resources.MainRestartBtnName}"
-                            IsEnabled="{Binding Path=DocumentAdderModel.IsRestartBtnEnabled}" />
                     </StackPanel>
                 </Grid>
-            </TabItem>
+            </TabItem>-->
             <TabItem Header="{x:Static res:Resources.MainSecondTabHeader}">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>

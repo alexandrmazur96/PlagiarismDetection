@@ -1,101 +1,348 @@
-﻿using DocumentAdder.Helpers;
-using DocumentAdder.Model;
-using DocumentAdder.Actions.DocumentAction;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using DocumentAdder.Types;
+using System.Windows.Threading;
 using DocumentAdder.Actions;
-using System.Threading;
+using DocumentAdder.Actions.DocumentAction;
+using DocumentAdder.Helpers;
+using DocumentAdder.Model;
+using DocumentAdder.Types;
+using DocumentAdder.Types.DataBase;
+using DocumentAdder.Types.Exceptions;
 
 namespace DocumentAdder.ViewModel
 {
     public class MainViewModel
     {
-        public MainModel DocumentAdderModel { get; }
+        /// <summary>
+        /// Количество поток, работающих в данный момент.
+        /// </summary>
+        private static int _threadCount = 0;
+
+        /// <summary>
+        /// DispatcherTimer, нужен для non-stop работы приложения. Инициализируется в статическом 
+        /// конструкторе, в едином экземпляре.
+        /// </summary>
+        private static readonly DispatcherTimer AutoWorkTimer;
+
+        /// <summary>
+        /// MainModel, модель данной части. Название походит от названия приложения.
+        /// </summary>
+        public static MainModel DocumentAdderModel { get; }
+
+        /// <summary>
+        /// Модель настроек.
+        /// </summary>
         public static MainSettingModel SettingModel { get; set; }
+
+        /// <summary>
+        /// Модель логов.
+        /// </summary>
+        public static LogViewModel LogVM { get; set; }
 
         #region Commands
         //main programm commands
+        /// <summary>
+        /// Команда старта программы.
+        /// </summary>
         public ICommand StartProgrammCommand { get; private set; }
+
+        /// <summary>
+        /// Команда остановки программы.
+        /// </summary>
         public ICommand StopProgrammCommand { get; private set; }
-        public ICommand RestartProgrammCommand { get; private set; }
-        public ICommand GetSettings { get; private set; }
         #endregion
 
         #region Methods
 
-        private void GetSetting()
-        {
-            Console.WriteLine(ProgramSettings.GetInstance().ToString());            
-        }
         //main programm methods        
 
-        private void StartProgramm()
+        /// <summary>
+        /// Старт программы.
+        /// </summary>
+        private async void StartProgramm()
         {
-            DocumentAdderModel.IsStartBtnEnabled = false;
-            DocumentAdderModel.IsStopBtnEnabled = true;
-            DocumentAdderModel.IsRestartBtnEnabled = true;
-
-            var lists = DocumentActions.GetFilePaths();
-            foreach (var item in lists)
+            //Если по старту программы, сервер MongoDb не работает или не доступен
+            //то, прерываем программу
+            if (!await DataBase.GetInstance().CheckMongoConnection())
             {
-                var canonedTokens = DocumentActions.GetWordCanonedTokens(item);
-                canonedTokens.ConsolePrintList("Original List:");
-                DocumentActions.Cyrillify(ref canonedTokens);
-                canonedTokens.ConsolePrintList("Cyrillify List:");
-            }            
+                StopProgramm(true);
+                return;
+            }
+
+            //Обработчик тика "главного" таймера (AutoWorkTimer). Вызывается раз в час 
+            //и добавляет данные.
+            EventHandler autoWorkHandler = (sender, args) =>
+            {
+                //При нажатии кнопки "старт" сама кнопка блокируется, а кнопка "стоп" становится доступной
+                DocumentAdderModel.IsStartBtnEnabled = false;
+                DocumentAdderModel.IsStopBtnEnabled = true;
+
+                //Получаем пути файлов из репозитория.
+                var filePaths = DocumentActions.GetFilePaths();
+
+                //Получаем енумератор, для асинхронного (параллельного) "прохождения" по коллекции файлов.
+                var filePathEnumerator = filePaths.GetEnumerator();
+
+                //Поскольку программа работает параллельно, то выполнение потоков нужно отслеживать,
+                //для этого создаем еще один таймер.
+                //Смотрится экономнее в сравнении с циклом (while(true))
+                var makeWorkTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+
+                //Обработчик "локального" таймера. Отслеживает количество потоков и количество оставшихся файлов.                
+                EventHandler makeWorkHandler = (mwSender, mwArgs) =>
+                {
+                    //Если текущее количество выполняемых потоков больше определенного количества
+                    //(указывается в настройках), то текущий "тик" можно пропустить.
+                    if (_threadCount >= ProgramSettings.GetInstance().ThreadCount) return;
+
+                    //Цикл из количества доступных потоков, в которым идет обработка данных
+                    for (; _threadCount < ProgramSettings.GetInstance().ThreadCount;)
+                    {
+                        //Проходимся по коллекции, если в ней еще есть файлы.
+                        if (filePathEnumerator.MoveNext())
+                        {
+                            //Обрабатываем файлы                            
+                            MakeWork2Async(filePathEnumerator.Current);
+                        }
+                        //Если файлов не осталось - останавливаем "локальный" таймер и выходим из цикла.
+                        else
+                        {
+                            makeWorkTimer.Stop();
+                            break;
+                        }
+                    }
+                };
+
+                //Запускаем "локальный" таймер, привязывая к нему обработчик.
+                makeWorkTimer.Tick += makeWorkHandler;
+                makeWorkTimer.Start();
+                makeWorkHandler(this, EventArgs.Empty);
+            };
+
+            //По нажатию кнопки старт мы запускаем "главный" таймер и программа начинает выполнять свою работу
+            //сразу же.
+            AutoWorkTimer.Tick += autoWorkHandler;
+            AutoWorkTimer.Start();
+            autoWorkHandler(this, EventArgs.Empty);
         }
 
-        //settings methods
-
-
-        //other methods
-        private int ThreadCount(int fileCount)
+        /// <summary>
+        /// Остановка программы.
+        /// </summary>
+        /// <param name="forceStop"></param>
+        public static void StopProgramm(bool forceStop = false)
         {
-            if (fileCount <= 50 && fileCount > 1)
+            AutoWorkTimer.Stop();
+            DocumentAdderModel.IsStartBtnEnabled = true;
+            DocumentAdderModel.IsStopBtnEnabled = false;
+            if (forceStop)
             {
-                return 1;
+                Console.Error.WriteLineAsync("Подключение к MongoDb отсутствует!");
+                System.Windows.MessageBox.Show("Не удалось подключиться к серверу MongoDb!\n" +
+                                               "Повторите попытку через некоторое время!", "Ошибка подключения к серверу MongoDb!");
+                LogViewModel.AddNewLog("Не удалось подключиться к серверу MongoDb!", DateTime.Now, LogType.Error);
             }
-            else if (fileCount > 50 && fileCount <= 100)
+        }
+
+        private void MakeWork(IEnumerable<string> filePaths)
+        {
+            foreach (var filePath in filePaths)
             {
-                return 2;
+                var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
+                DocumentActions.Cyrillify(ref canonedTokens);
+                var extension = Path.GetExtension(filePath);
+                //эта переменная будет использоваться для занесения в базу пути файла и ее производных
+                var newFilePath = filePath;
+                //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
+                //то при вставке документа в БД используется новый формат *.docx
+                if (extension != null && extension.Equals(".doc"))
+                {
+                    newFilePath += "x";
+                }
+                newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
+                var fileName = Path.GetFileNameWithoutExtension(filePath);
+                //Здесь будут хранится данные из имени файла.
+                string[] fileNameData;
+                try
+                {
+                    fileNameData = DocumentActions.SplitFileName(fileName);
+                }
+                catch (FileNameFormatException ex)
+                {
+                    LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
+                    fileNameData = new[]
+                    {
+                        "Undefined", //ФИО-автора
+                        "Undefined", //Группа автора
+                        fileName //Название работы
+                    };
+                }
+                //создаем новый документ <Document> для вставки в коллекцию
+                var insertDoc = new Document(
+                    fileNameData[2], //Здесь хранится имя документа
+                    fileNameData[0], //Здесь хранится ФИО автора документа
+                    fileNameData[1], //Здесь хранится группа автора документа
+                    newFilePath,
+                    Path.GetExtension(newFilePath),
+                    FileActions.FileHash(newFilePath),
+                    canonedTokens.ToArray(),
+                    DocumentActions.MakeTfVector(canonedTokens),
+                    File.GetLastWriteTime(newFilePath));
+                //вставляем в БД
+                DataBase.GetInstance().InsertDocument(insertDoc);
             }
-            else if (fileCount > 100 && fileCount <= 150)
+        }
+
+        private static async void MakeWorkAsync(IEnumerable<string> filePaths)
+        {
+            foreach (var filePath in filePaths)
             {
-                return 3;
+                var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
+                DocumentActions.Cyrillify(ref canonedTokens);
+                var extension = Path.GetExtension(filePath);
+                //эта переменная будет использоваться для занесения в базу пути файла и ее производных
+                var newFilePath = filePath;
+                //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
+                //то при вставке документа в БД используется новый формат *.docx
+                if (extension != null && extension.Equals(".doc"))
+                {
+                    newFilePath += "x";
+                }
+                newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
+                var fileName = Path.GetFileNameWithoutExtension(filePath);
+                //Здесь будут хранится данные из имени файла.
+                string[] fileNameData;
+                try
+                {
+                    fileNameData = DocumentActions.SplitFileName(fileName);
+                }
+                catch (FileNameFormatException ex)
+                {
+                    LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
+                    fileNameData = new[]
+                    {
+                        "Undefined", //ФИО-автора
+                        "Undefined", //Группа автора
+                        fileName //Название работы
+                    };
+                }
+                //создаем новый документ <Document> для вставки в коллекцию
+                var insertDoc = new Document(
+                    fileNameData[2], //Здесь хранится имя документа
+                    fileNameData[0], //Здесь хранится ФИО автора документа
+                    fileNameData[1], //Здесь хранится группа автора документа
+                    newFilePath,
+                    Path.GetExtension(newFilePath),
+                    FileActions.FileHash(newFilePath),
+                    canonedTokens.ToArray(),
+                    DocumentActions.MakeTfVector(canonedTokens),
+                    File.GetLastWriteTime(newFilePath));
+                //вставляем в БД
+                await DataBase.GetInstance().InsertDocumentAsync(insertDoc);
+            }
+        }
+
+        /// <summary>
+        /// Обработка файла по указанному пути.
+        /// </summary>
+        /// <param name="filePath">Путь к файлу.</param>
+        /// <returns></returns>
+        private static async Task MakeWork2Async(string filePath)
+        {
+            //Проверяем состояние сервера MongoDb.
+            if (await DataBase.GetInstance().CheckMongoConnection())
+            {
+                //Инкрементируем к-ство выполняемых потоков.
+                //++_threadCount;
+                Console.WriteLine("Thread #" + ++_threadCount + " started!");
+                var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
+                DocumentActions.Cyrillify(ref canonedTokens);
+                var extension = Path.GetExtension(filePath);
+                //эта переменная будет использоваться для занесения в базу пути файла и ее производных
+                var newFilePath = filePath;
+                //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
+                //то при вставке документа в БД используется новый формат *.docx
+                if (extension != null && extension.Equals(".doc"))
+                {
+                    newFilePath += "x";
+                }
+                newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
+                var fileName = Path.GetFileNameWithoutExtension(filePath);
+                //Здесь будут хранится данные из имени файла.
+                string[] fileNameData;
+                try
+                {
+                    fileNameData = DocumentActions.SplitFileName(fileName);
+                }
+                catch (FileNameFormatException ex)
+                {
+                    LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
+                    fileNameData = new[]
+                    {
+                        "Undefined", //ФИО-автора
+                        "Undefined", //Группа автора
+                        fileName //Название работы
+                    };
+                }
+                //создаем новый документ <Document> для вставки в коллекцию
+                var insertDoc = new Document(
+                    fileNameData[2], //Здесь хранится имя документа
+                    fileNameData[0], //Здесь хранится ФИО автора документа
+                    fileNameData[1], //Здесь хранится группа автора документа
+                    newFilePath,
+                    Path.GetExtension(newFilePath),
+                    FileActions.FileHash(newFilePath),
+                    canonedTokens.ToArray(),
+                    DocumentActions.MakeTfVector(canonedTokens),
+                    File.GetLastWriteTime(newFilePath));
+                //вставляем в БД
+                await DataBase.GetInstance().InsertDocumentAsync(insertDoc);
+
+                --_threadCount;
             }
             else
             {
-                return 4;
+                StopProgramm(true);
             }
         }
-        
-        
+        //settings methods
+
+        //other methods
+
         #endregion
 
         static MainViewModel()
         {
+            if (AutoWorkTimer == null)
+            {
+                var single = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3600) };
+                AutoWorkTimer = single;
+            }
+
             if (SettingModel == null)
             {
                 var single = new MainSettingModel();
                 SettingModel = single;
             }
+            if (LogVM == null)
+            {
+                var single = new LogViewModel();
+                LogVM = single;
+            }
+            if (DocumentAdderModel == null)
+            {
+                var single = new MainModel();
+                DocumentAdderModel = single;
+            }
         }
 
         public MainViewModel()
         {
-            DocumentAdderModel = new MainModel();
-
-            var t = new Types.DataBase.DataBase();
-            t.ChooseDatabase("test2");
-
-            GetSettings = new DelegateCommand(action => GetSetting());
             StartProgrammCommand = new DelegateCommand(action => StartProgramm());
+            StopProgrammCommand = new DelegateCommand(action => StopProgramm());
         }
     }
 }

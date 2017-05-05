@@ -5,16 +5,96 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DocumentAdder.Helpers;
 using DocumentAdder.Types;
+using DocumentAdder.Types.DataBase;
+using DocumentAdder.Types.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace DocumentAdder.Actions.DocumentAction
 {
     public class DocumentActions
     {
+        #region Private members
+
+        #region Methods
+
+        /// <summary>
+        /// Очищает текст используя базу (словарь) стоп-слов
+        /// </summary>
+        /// <param name="text">Неочищенный текст, который нужно канонизировать</param>
+        /// <returns>Коллекцию слов из текста, которые готовы к употреблению =)</returns>
+        private static List<string> TextPurify(string text)
+        {
+            //разделяем ввесь текст на отдельные слова
+            var rawTokens = text.Split(Separators).ToList();
+
+            //проходимся по этому списку слов в linq-выражении
+            var canonedTokens = rawTokens.Select(word => word.ToCharArray().Where(n => !char.IsDigit(n)).ToArray()).Select(purified => new string(purified)).ToList();
+
+            //из этой коллекции удаляем все пустые элементы и стоп-слова используя linq
+            canonedTokens.RemoveAll(item => StopWords.Contains(item.ToLower()) || string.IsNullOrWhiteSpace(item));
+
+            //также удаляются все стоп-символы из слов в коллекции
+            var purifiedTokens = (from item in canonedTokens let regex = new Regex("[0-9/|_!@#$%^&*()_+=?:;.,{}№><«»'\"`~" + @"\\[\]– -]*") select regex.Replace(item, "")).ToList();
+
+            //устанавливаются все слова в Lower Case
+            var purifiedLowerCaseTokens = purifiedTokens.Select(purifiedToken => purifiedToken.ToLower()).ToList();
+
+            return purifiedLowerCaseTokens;
+        }
+
+        /// <summary>
+        /// Возвращает количество всех документов.
+        /// </summary>
+        /// <returns>Количество всех документов в MongoDb.</returns>
+        private static int GetCountAllDocuments()
+        {
+            return DataBase.GetInstance().GetAllDocuments().Count;
+        }
+
+        /// <summary>
+        /// Асинхронно возвращает количество всех документов.
+        /// </summary>
+        /// <returns>Количество всех документов в MongoDb.</returns>
+        private static async Task<int> GetCountAllDocumentsAsync()
+        {
+            var documentsList = await DataBase.GetInstance().GetAllDocumentsAsync();
+            return documentsList.Count;
+        }
+
+        /// <summary>
+        /// Возвращает количество документов, в которых есть нужное слово.
+        /// </summary>
+        /// <param name="token">Искомое слово.</param>
+        /// <returns>Количество документов, которые содержат искомое слово.</returns>
+        private static int GetCountDocumentWithToken(string token)
+        {
+            return DataBase.GetInstance().GetAllDocuments(new BsonDocument(
+                new BsonElement("DocumentTokens", token))).Count;
+        }
+
+        /// <summary>
+        /// Асинхронно возвращает количество документов, в которых есть нужное слово.
+        /// </summary>
+        /// <param name="token">Искомое слово.</param>
+        /// <returns>Количество документов, которые содержат искомое слово.</returns>
+        private static async Task<int> GetCountDocumentWithTokenAsync(string token)
+        {
+            var documentList = await DataBase.GetInstance().GetAllDocumentsAsync(new BsonDocument(
+                new BsonElement("DocumentTokens", token)));
+            return documentList.Count;
+        }
+
+        #endregion
+
+        #region Const Data
+
         /// <summary>
         /// Разделители, для extension-метода класса string - Split.
         /// Необходимы, для разбиение текста по указанным разделителям.
@@ -23,7 +103,8 @@ namespace DocumentAdder.Actions.DocumentAction
         {
             //стоп-символы
             '.', ',', ';', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '\\', '/',
-            '<', '>', '\'', '№', '?', ':', '`', '~', ' ', '\t', '\n', '\r'
+            '<', '>', '\'', '№', '?', ':', '`', '~', ' ', '\t', '\n', '\r', '|', '[', ']', '{', '}', '"', '–',
+            '«', '»'
         };
 
         /// <summary>
@@ -136,33 +217,37 @@ namespace DocumentAdder.Actions.DocumentAction
             ['X'] = 'х'
         };
 
+        #endregion
+
+        #endregion
+
+        /// <summary>
+        /// Возвращает пути к файлам.
+        /// </summary>
+        /// <returns>Коллекцию с путями к файлов.</returns>
         public static List<string> GetFilePaths()
         {
             //коллекция с путями к *файлам* документов
-            List<string> filePaths = new List<string>();
+            var filePaths = new List<string>();
 
             foreach (var item in ProgramSettings.GetInstance().CollectionsPaths)
             {
-                if (item.StorageType == InternalStorageType.Directory)
+                switch (item.StorageType)
                 {
-                    foreach (string documentFile in Directory.GetFiles(item.StoragePath, "*.*").
-                    Where(s =>
+                    case InternalStorageType.Directory:
+                        filePaths.AddRange(Directory.GetFiles(item.StoragePath, "*.*").Where(s =>
                         {
                             var extension = Path.GetExtension(s);
                             return extension != null && ProgramSettings.GetInstance().FileTypes.Contains(extension.ToLower());
-                        }))
-                    {
-                        //do work here
-                        //Console.WriteLine(documentFile);
-                        filePaths.Add(documentFile);
-                    }
-                }
-                else if (item.StorageType == InternalStorageType.FTP)
-                {
+                        }));
+                        break;
+                    case InternalStorageType.FTP:
 
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
-
             return filePaths;
         }
 
@@ -231,7 +316,7 @@ namespace DocumentAdder.Actions.DocumentAction
         /// <returns>Возвращает очищенный (канонизированный) список слов, готовых к работе в алгоритме TF*IDF</returns>
         public static List<string> GetWordCanonedTokens(string wordFilePath)
         {
-            List<string> tokenList = new List<string>();
+            var tokenList = new List<string>();
             try
             {
                 object fileName = wordFilePath;
@@ -246,7 +331,7 @@ namespace DocumentAdder.Actions.DocumentAction
                 {
                     try
                     {
-                        Word.Application app = new Word.Application();
+                        var app = new Word.Application();
                         //присваиваем новое имя (такое же, только без расширения, чтобы сохранилось нормас)
                         //Word.Interop принимает в качестве параметров объекты object, даже если там строка
                         //странно, но по другому никак
@@ -254,7 +339,7 @@ namespace DocumentAdder.Actions.DocumentAction
                         //открываем указанный документ
                         app.Documents.Open(ref fileName, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss);
                         //получаем открытый документ для манипуляций
-                        Word.Document doc = app.ActiveDocument;
+                        var doc = app.ActiveDocument;
                         //пересохраняем его
                         doc.SaveAs2(newFileName, Word.WdSaveFormat.wdFormatXMLDocument);
                         //закрываем документ
@@ -275,10 +360,16 @@ namespace DocumentAdder.Actions.DocumentAction
                 string rawText; //необработанный текст
 
                 //открываем документ, используя оператор using (аналог try с ресурсами в Java)
-                using (WordprocessingDocument wordDocument = WordprocessingDocument.Open(fileName as string, false))
+                using (var wordDocument = WordprocessingDocument.Open(fileName as string, false))
                 {
                     //получаем весь текст
-                    rawText = wordDocument.MainDocumentPart.Document.Body.InnerText;
+                    var paraList = wordDocument.MainDocumentPart.Document.Body.ChildElements;
+                    var sb = new StringBuilder();
+                    foreach (var paragraph in paraList)
+                    {
+                        sb.Append(paragraph.InnerText + " ");
+                    }
+                    rawText = sb.ToString();
                 }
 
                 //очищаем или канонизируем его, превращая в список
@@ -289,25 +380,6 @@ namespace DocumentAdder.Actions.DocumentAction
                 Console.Error.WriteLine(e.Message);
             }
             return tokenList;
-        }
-
-        /// <summary>
-        /// Очищает текст используя базу (словарь) стоп-слов
-        /// </summary>
-        /// <param name="text">Неочищенный текст, который нужно канонизировать</param>
-        /// <returns>Коллекцию слов из текста, которые готовы к употреблению =)</returns>
-        private static List<string> TextPurify(string text)
-        {
-            //разделяем ввесь текст на отдельные слова
-            List<string> rawTokens = text.Split(Separators).ToList();
-
-            //проходимся по этому списку слов в linq-выражении
-            List<string> purifiedTokens = rawTokens.Select(word => word.ToCharArray().Where(n => !char.IsDigit(n)).ToArray()).Select(purified => new string(purified)).ToList();
-
-            //из этой коллекции удаляем все пустые элементы и стоп-слова используя linq
-            purifiedTokens.RemoveAll(item => StopWords.Contains(item.ToLower()) || string.IsNullOrWhiteSpace(item));
-
-            return purifiedTokens;
         }
 
         /// <summary>
@@ -326,6 +398,151 @@ namespace DocumentAdder.Actions.DocumentAction
                 }
                 purifiedTokensList = purifiedTokensList.ItemReplace(purifiedToken, sb.ToString());
             }
+        }
+
+        /// <summary>
+        /// Составляет словарь (TF вектор) с парами [Слово:к-ство употреблений в документе].
+        /// </summary>
+        /// <param name="doneList">Полностью готовый для обработки (подсчета) текст.</param>
+        /// <returns>Словарь (TF вектор).</returns>
+        public static Dictionary<string, double> MakeTfVector(List<string> doneList)
+        {
+            var tfVector = new Dictionary<string, double>();
+            var tmp = new List<string>(doneList);
+            //к-ство слов в документе
+            var tokensCount = doneList.Count;
+            foreach (string token in tmp)
+            {
+                var currentTokenCount = doneList.FindAll(x => token.Equals(x)).Count;
+                doneList.RemoveAll(x => token.Equals(x));
+                if (!tfVector.ContainsKey(token))
+                {
+                    tfVector.Add(token, (double)currentTokenCount / tokensCount);
+                }
+            }
+            return tfVector;
+        }   
+
+        /// <summary>
+        /// Создание IDF-вектора.
+        /// </summary>
+        /// <returns>IDF-вектор.</returns>
+        public static List<IdfItem> MakeIdfVector(Dictionary<string, double> tfVector)
+        {
+            var documentsList = DataBase.GetInstance().GetAllDocuments();
+            var documentsCount = documentsList.Count;
+            return tfVector.Select(tfItem => new IdfItem
+            {
+                IdfId = default(ObjectId),
+                Token = tfItem.Key,
+                IdfValue = (double)GetCountDocumentWithToken(tfItem.Key) / documentsCount
+            }).ToList();
+        }
+
+        /// <summary>
+        /// Асинхронное создание IDF-вектора.
+        /// </summary>
+        /// <returns>IDF-вектор.</returns>
+        public static async Task<List<IdfItem>> MakeIdfVectorAsync(Dictionary<string, double> tfVector)
+        {
+            var documentsList = DataBase.GetInstance().GetAllDocuments();
+            var documentsCount = documentsList.Count;
+            var idfVector = new List<IdfItem>();            
+            foreach (var tfItem in tfVector)
+            {
+                idfVector.Add(new IdfItem
+                {
+                    IdfId = default(ObjectId),
+                    Token = tfItem.Key,
+                    IdfValue = (double) await GetCountDocumentWithTokenAsync(tfItem.Key) / documentsCount
+                });
+            }
+            return idfVector;
+        }
+
+        /// <summary>
+        /// Создание TF-вектора.
+        /// </summary>
+        /// <param name="tfVector">TF-вектор документа.</param>
+        /// <returns>TF*IDF-вектор.</returns>
+        public static Dictionary<string, double> MakeTfIdfVector(Dictionary<string, double> tfVector)
+        {
+            var idfVector = DataBase.GetInstance().GetIdfVector();
+            var tfIdfVector = new Dictionary<string, double>();
+            int index = 0;
+            foreach (var tf in tfVector)
+            {
+                if (idfVector.ContainsIdf(tf.Key))
+                {
+                    tfIdfVector.Add(tf.Key, tf.Value * idfVector[index].IdfValue);
+                }
+                index++;
+            }
+            return tfIdfVector;
+        }
+
+        /// <summary>
+        /// Асинхронное создание TF*IDF-вектора.
+        /// </summary>
+        /// <param name="tfVector">TF-вектор документа.</param>
+        /// <returns>TF*IDF-вектор.</returns>
+        public static async Task<Dictionary<string, double>> MakeTfIdfVectorAsync(Dictionary<string, double> tfVector)
+        {
+            var idfVector = await DataBase.GetInstance().GetIdfVectorAsync();
+            var tfIdfVector = new Dictionary<string, double>();
+            int index = 0;
+            foreach (var tf in tfVector)
+            {
+                if (idfVector.ContainsIdf(tf.Key))
+                {
+                    tfIdfVector.Add(tf.Key, tf.Value * idfVector[index].IdfValue);
+                }
+                index++;
+            }
+            return tfIdfVector;
+        }
+
+        /// <summary>
+        /// Измеряет дистанцию Левенштейна.
+        /// </summary>
+        /// <param name="string1">Первая строка.</param>
+        /// <param name="string2">Вторая строка.</param>
+        /// <returns>Значение дистанции Левенштейна.</returns>
+        public static int LevenshteinDistance(string string1, string string2)
+        {
+            if (string1 == null) throw new ArgumentNullException(nameof(string1));
+            if (string2 == null) throw new ArgumentNullException(nameof(string2));
+            int[,] m = new int[string1.Length + 1, string2.Length + 1];
+
+            for (int i = 0; i <= string1.Length; i++) { m[i, 0] = i; }
+            for (int j = 0; j <= string2.Length; j++) { m[0, j] = j; }
+
+            for (int i = 1; i <= string1.Length; i++)
+            {
+                for (int j = 1; j <= string2.Length; j++)
+                {
+                    var diff = (string1[i - 1] == string2[j - 1]) ? 0 : 1;
+
+                    m[i, j] = Math.Min(Math.Min(m[i - 1, j] + 1,
+                                             m[i, j - 1] + 1),
+                                             m[i - 1, j - 1] + diff);
+                }
+            }
+            return m[string1.Length, string2.Length];
+        }
+
+        /// <summary>
+        /// Разделяет имя файла на составные части: [Автор, Группа, Имя].
+        /// </summary>
+        /// <param name="fileName">Имя файла</param>
+        /// <returns>Массив составных частей из имени файла в виде [Author, Group, DocumentName]</returns>
+        public static string[] SplitFileName(string fileName)
+        {
+            if (Verifications.IsFileNameValid(fileName))
+            {
+                return fileName.Split('_');
+            }
+            throw new FileNameFormatException("Неправильный формат входного файла!");
         }
     }
 }

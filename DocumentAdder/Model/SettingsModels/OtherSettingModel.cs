@@ -96,7 +96,45 @@ namespace DocumentAdder.Model.SettingsModels
             }
         }
 
+        /// <summary>
+        /// Показывает путь, куда следует перемещать обработанные файлы
+        /// </summary>
+        public string ReplacePath
+        {
+            get { return ProgramSettings.ReplacePath; }
+            set
+            {
+                ProgramSettings.ReplacePath = value;
+                NotifyPropertyChanged();                
+            }
+        }
+
+        public int ThreadCount
+        {
+            get { return ProgramSettings.ThreadCount; }
+            set
+            {
+                if (value <= 0)
+                {
+                    ProgramSettings.ThreadCount = 1;
+                    NotifyPropertyChanged();
+                }
+                else
+                {
+                    ProgramSettings.ThreadCount = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        } 
+
         #endregion
 
+        public OtherSettingModel()
+        {
+            if (string.IsNullOrWhiteSpace(ReplacePath))
+            {
+                ReplacePath = "Директория не выбрана, выберите, пожалуйста, директорию!";
+            }
+        }
     }
 }
