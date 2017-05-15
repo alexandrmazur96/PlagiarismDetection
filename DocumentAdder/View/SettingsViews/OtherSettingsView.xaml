@@ -25,9 +25,6 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
         <TextBlock
             Grid.Row="0"
             HorizontalAlignment="Center"

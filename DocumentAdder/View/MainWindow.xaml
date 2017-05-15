@@ -25,7 +25,7 @@
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <ListView ItemsSource="{Binding Path=LogVM.LogModelInstance.LogMessages}">
+                    <ListView ItemsSource="{Binding Path=LogVm.LogModelInstance.LogMessages}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Width="Auto" Header="{x:Static res:Resources.LogListViewDate}">
@@ -52,22 +52,22 @@
                         <Button
                             Margin="0,0,5,0"
                             Padding="3,0,3,0"
-                            Command="{Binding Path=LogVM.SaveToClipboardCommand}"
+                            Command="{Binding Path=LogVm.SaveToClipboardCommand}"
                             Content="{x:Static res:Resources.LogClipboardBtn}" />
                         <Button
                             Margin="0,0,5,0"
                             Padding="3,0,3,0"
-                            Command="{Binding Path=LogVM.SaveToFileCommand}"
+                            Command="{Binding Path=LogVm.SaveToFileCommand}"
                             Content="{x:Static res:Resources.LogSaveToFileBtn}" />
                         <Button
                             Margin="0,0,5,0"
                             Padding="3,0,3,0"
-                            Command="{Binding Path=LogVM.SaveAllToFileCommand}"
+                            Command="{Binding Path=LogVm.SaveAllToFileCommand}"
                             Content="{x:Static res:Resources.LogAllSaveToFile}" />
                         <Button
                             Margin="0,0,5,0"
                             Padding="3,0,3,0"
-                            Command="{Binding Path=LogVM.LogClearCommand}"
+                            Command="{Binding Path=LogVm.LogClearCommand}"
                             Content="{x:Static res:Resources.LogCleanBtn}" />
                     </StackPanel>
                     <StackPanel Grid.Row="2" Orientation="Horizontal">

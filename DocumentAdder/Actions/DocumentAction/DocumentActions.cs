@@ -12,8 +12,8 @@ using DocumentAdder.Types;
 using DocumentAdder.Types.DataBase;
 using DocumentAdder.Types.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
+using Iveonik.Stemmers;
 using MongoDB.Bson;
-using MongoDB.Driver;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace DocumentAdder.Actions.DocumentAction
@@ -22,7 +22,7 @@ namespace DocumentAdder.Actions.DocumentAction
     {
         #region Private members
 
-        #region Methods
+        #region Methods       
 
         /// <summary>
         /// Очищает текст используя базу (словарь) стоп-слов
@@ -46,7 +46,28 @@ namespace DocumentAdder.Actions.DocumentAction
             //устанавливаются все слова в Lower Case
             var purifiedLowerCaseTokens = purifiedTokens.Select(purifiedToken => purifiedToken.ToLower()).ToList();
 
-            return purifiedLowerCaseTokens;
+            var stemmedLowerCaseTokens = new List<string>();
+            var cyrillicStemmer = new RussianStemmer();
+            var latinStemmer = new EnglishStemmer();
+            foreach (var purifiedLowerCaseToken in purifiedLowerCaseTokens)
+            {
+                switch (Verifications.GetFontType(purifiedLowerCaseToken))
+                {
+                    case FontType.Cyrillic:
+                        stemmedLowerCaseTokens.Add(cyrillicStemmer.Stem(purifiedLowerCaseToken));
+                        break;
+                    case FontType.Latin:
+                        stemmedLowerCaseTokens.Add(latinStemmer.Stem(purifiedLowerCaseToken));
+                        break;
+                    case FontType.Other:
+                    case FontType.Numbers:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return stemmedLowerCaseTokens;
         }
 
         /// <summary>
@@ -421,7 +442,7 @@ namespace DocumentAdder.Actions.DocumentAction
                 }
             }
             return tfVector;
-        }   
+        }
 
         /// <summary>
         /// Создание IDF-вектора.
@@ -447,14 +468,14 @@ namespace DocumentAdder.Actions.DocumentAction
         {
             var documentsList = DataBase.GetInstance().GetAllDocuments();
             var documentsCount = documentsList.Count;
-            var idfVector = new List<IdfItem>();            
+            var idfVector = new List<IdfItem>();
             foreach (var tfItem in tfVector)
             {
                 idfVector.Add(new IdfItem
                 {
                     IdfId = default(ObjectId),
                     Token = tfItem.Key,
-                    IdfValue = (double) await GetCountDocumentWithTokenAsync(tfItem.Key) / documentsCount
+                    IdfValue = (double)await GetCountDocumentWithTokenAsync(tfItem.Key) / documentsCount
                 });
             }
             return idfVector;
@@ -496,39 +517,10 @@ namespace DocumentAdder.Actions.DocumentAction
                 if (idfVector.ContainsIdf(tf.Key))
                 {
                     tfIdfVector.Add(tf.Key, tf.Value * idfVector[index].IdfValue);
+                    index++;
                 }
-                index++;
             }
             return tfIdfVector;
-        }
-
-        /// <summary>
-        /// Измеряет дистанцию Левенштейна.
-        /// </summary>
-        /// <param name="string1">Первая строка.</param>
-        /// <param name="string2">Вторая строка.</param>
-        /// <returns>Значение дистанции Левенштейна.</returns>
-        public static int LevenshteinDistance(string string1, string string2)
-        {
-            if (string1 == null) throw new ArgumentNullException(nameof(string1));
-            if (string2 == null) throw new ArgumentNullException(nameof(string2));
-            int[,] m = new int[string1.Length + 1, string2.Length + 1];
-
-            for (int i = 0; i <= string1.Length; i++) { m[i, 0] = i; }
-            for (int j = 0; j <= string2.Length; j++) { m[0, j] = j; }
-
-            for (int i = 1; i <= string1.Length; i++)
-            {
-                for (int j = 1; j <= string2.Length; j++)
-                {
-                    var diff = (string1[i - 1] == string2[j - 1]) ? 0 : 1;
-
-                    m[i, j] = Math.Min(Math.Min(m[i - 1, j] + 1,
-                                             m[i, j - 1] + 1),
-                                             m[i - 1, j - 1] + diff);
-                }
-            }
-            return m[string1.Length, string2.Length];
         }
 
         /// <summary>
@@ -543,6 +535,6 @@ namespace DocumentAdder.Actions.DocumentAction
                 return fileName.Split('_');
             }
             throw new FileNameFormatException("Неправильный формат входного файла!");
-        }
+        }        
     }
 }

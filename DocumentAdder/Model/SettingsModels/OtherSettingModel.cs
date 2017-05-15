@@ -77,7 +77,6 @@ namespace DocumentAdder.Model.SettingsModels
             {
                 ProgramSettings.IsPdf = value;
                 NotifyPropertyChanged();
-                Console.WriteLine(Transformation.FlagToExtensions());
                 ProgramSettings.FileTypes = Transformation.FlagToExtensions();
             }
         }
@@ -97,7 +96,7 @@ namespace DocumentAdder.Model.SettingsModels
         }
 
         /// <summary>
-        /// Показывает путь, куда следует перемещать обработанные файлы
+        /// Показывает путь, куда следует перемещать обработанные файлы.
         /// </summary>
         public string ReplacePath
         {
@@ -109,6 +108,9 @@ namespace DocumentAdder.Model.SettingsModels
             }
         }
 
+        /// <summary>
+        /// Показывает количество одновременно выполняемых потоков.
+        /// </summary>
         public int ThreadCount
         {
             get { return ProgramSettings.ThreadCount; }

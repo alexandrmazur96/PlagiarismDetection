@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DocumentAdder.Types
 {
@@ -20,7 +15,6 @@ namespace DocumentAdder.Types
         public string Login { get; set; }
 
         [DataMember]
-        //надо будет зашифровать!!!
         public string Password { get; set; }
 
         [DataMember]
@@ -65,16 +59,6 @@ namespace DocumentAdder.Types
 
         private static ProgramSettings _instanceSettings;
 
-        public override string ToString()
-        {
-            return "ConnectionString = " + ConnectionString + "\n"
-                + "Login = " + Login + "\n"
-                + "Password = " + Password + "\n"
-                + "DataBaseName = " + DataBaseName + "\n"
-                + "FileTypes = " + FileTypes + "\n"
-                + " " + IsDoc + " " + IsDocx + " " + IsOtd;
-        }
-
         private ProgramSettings()
         {
             CollectionsPaths = new ObservableCollection<RepositoryPath>();
@@ -95,26 +79,29 @@ namespace DocumentAdder.Types
             return _instanceSettings;
         }
 
-
+        /// <summary>
+        /// Инициализирует (загружает) настройки.
+        /// </summary>
+        /// <param name="loadedProgramSettings">Объект с настройками.</param>
         public static void LoadSettings(ProgramSettings loadedProgramSettings)
         {
             //other settings
-            ProgramSettings.GetInstance().IsDoc = loadedProgramSettings.IsDoc;
-            ProgramSettings.GetInstance().IsDocx = loadedProgramSettings.IsDocx;
-            ProgramSettings.GetInstance().IsRtf = loadedProgramSettings.IsRtf;
-            ProgramSettings.GetInstance().IsOtd = loadedProgramSettings.IsOtd;
-            ProgramSettings.GetInstance().IsPdf = loadedProgramSettings.IsPdf;
-            ProgramSettings.GetInstance().IsTxt = loadedProgramSettings.IsTxt;
-            ProgramSettings.GetInstance().FileTypes = loadedProgramSettings.FileTypes;
-            ProgramSettings.GetInstance().ReplacePath = loadedProgramSettings.ReplacePath;
-            ProgramSettings.GetInstance().ThreadCount = loadedProgramSettings.ThreadCount;
+            GetInstance().IsDoc = loadedProgramSettings.IsDoc;
+            GetInstance().IsDocx = loadedProgramSettings.IsDocx;
+            GetInstance().IsRtf = loadedProgramSettings.IsRtf;
+            GetInstance().IsOtd = loadedProgramSettings.IsOtd;
+            GetInstance().IsPdf = loadedProgramSettings.IsPdf;
+            GetInstance().IsTxt = loadedProgramSettings.IsTxt;
+            GetInstance().FileTypes = loadedProgramSettings.FileTypes;
+            GetInstance().ReplacePath = loadedProgramSettings.ReplacePath;
+            GetInstance().ThreadCount = loadedProgramSettings.ThreadCount;
 
             //database and repo
-            ProgramSettings.GetInstance().CollectionsPaths = loadedProgramSettings.CollectionsPaths;
-            ProgramSettings.GetInstance().ConnectionString = loadedProgramSettings.ConnectionString;
-            ProgramSettings.GetInstance().DataBaseName = loadedProgramSettings.DataBaseName;
-            ProgramSettings.GetInstance().Login = loadedProgramSettings.Login;
-            ProgramSettings.GetInstance().Password = loadedProgramSettings.Password;
+            GetInstance().CollectionsPaths = loadedProgramSettings.CollectionsPaths;
+            GetInstance().ConnectionString = loadedProgramSettings.ConnectionString;
+            GetInstance().DataBaseName = loadedProgramSettings.DataBaseName;
+            GetInstance().Login = loadedProgramSettings.Login;
+            GetInstance().Password = loadedProgramSettings.Password;
             
         }
     }

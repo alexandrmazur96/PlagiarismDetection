@@ -59,14 +59,5 @@ namespace DocumentAdder.Types
         [BsonElement("FileId")]
         public object FileId { get; set; }
         #endregion
-
-        //public DocumentCollection(string documentHash, Dictionary<string, double> documentTfVector, DateTime documentAddTime, object FileId, object _id = null)
-        //{
-        //    this.FileId = FileId;
-        //    this._id = _id;
-        //    DocumentHash = documentHash;
-        //    DocumentTfVector = documentTfVector;
-        //    DocumentAddTime = documentAddTime;
-        //}
     }
 }

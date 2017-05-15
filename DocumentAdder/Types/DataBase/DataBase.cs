@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using DocumentAdder.Actions.DocumentAction;
-using DocumentAdder.ViewModel.SettingsViewModels;
-using DocumentAdder.Helpers;
 using DocumentAdder.ViewModel;
+using DocumentAdder.ViewModel.SettingsViewModels;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
-using MongoDB.Driver.Core.Connections;
-using MongoDB.Driver.Core.Servers;
 
 namespace DocumentAdder.Types.DataBase
 {
@@ -25,7 +23,6 @@ namespace DocumentAdder.Types.DataBase
         private MongoUrlBuilder _mongoUrl;
         private MongoClientSettings _clientSettings;
         private MongoClient _client;
-        private MongoServer _server;
         private IMongoDatabase _database;
 
         #endregion
@@ -106,12 +103,12 @@ namespace DocumentAdder.Types.DataBase
                     //инициализируем MongoClient с этими настройками
                     _client = new MongoClient(_clientSettings);
                     //получаем выбранную базу данных
-                    _database = _client.GetDatabase(DatabaseSettingViewModel.DatabaseModel.DatabaseName);
-
+                    var dbName = string.IsNullOrWhiteSpace(DatabaseSettingViewModel.DatabaseModel.DatabaseName) ? "test" : DatabaseSettingViewModel.DatabaseModel.DatabaseName;
+                    _database = _client.GetDatabase(dbName);
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show(e.Source + " " + e.Message);
+                    MessageBox.Show(e.Source + " " + e.Message);
                 }
             }
             else
@@ -129,24 +126,17 @@ namespace DocumentAdder.Types.DataBase
                         ServerSelectionTimeout = TimeSpan.FromSeconds(5)
                     };
                     _client = new MongoClient(_clientSettings);
-                    _database = _client.GetDatabase(DatabaseSettingViewModel.DatabaseModel.DatabaseName);
+                    var dbName = string.IsNullOrWhiteSpace(DatabaseSettingViewModel.DatabaseModel.DatabaseName) ? "test" : DatabaseSettingViewModel.DatabaseModel.DatabaseName;
+                    _database = _client.GetDatabase(dbName);
 
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show(e.Source + " " + e.Message);
+                    MessageBox.Show(e.Source + " " + e.Message);
                 }
             }
 
-        }
-
-        /// <summary>
-        /// Устанавливает новый объект MongoServer,
-        /// </summary>
-        private void SetServer()
-        {
-            _server = new MongoServer(MongoServerSettings.FromClientSettings(_clientSettings));
-        }
+        }        
 
         /// <summary>
         /// Асинхронно проверяет наличие подключения к MongoDb.
@@ -249,9 +239,11 @@ namespace DocumentAdder.Types.DataBase
         /// Асинхронная вставка данных о документе в MongoDB.
         /// </summary>
         /// <param name="documentHash">Хеш-сумма документа.</param>
+        /// <param name="documentAuthorGroup">Группа автора документа.</param>
         /// <param name="documentTfVector">TF-вектор документа.</param>
         /// <param name="documentAddTime">Дата добавления документа.</param>
         /// <param name="documentTokens">Все очищенные слова документа.</param>
+        /// <param name="documentAuthor">Автор документа.</param>
         /// <returns>Task, для асинхронности.</returns>
         private async Task InsertDocumentDataAsync(string documentHash, string documentAuthor, string documentAuthorGroup, Dictionary<string, double> documentTfVector, DateTime documentAddTime, string[] documentTokens)
         {
@@ -625,10 +617,26 @@ namespace DocumentAdder.Types.DataBase
         {
             _connectionString = DatabaseSettingViewModel.DatabaseModel.ConnectionString;
             _mongoUrl = new MongoUrlBuilder(_connectionString);
-            _login = DatabaseSettingViewModel.DatabaseModel.Login;
+            _login = DatabaseSettingViewModel.DatabaseModel.Login ?? "";
             _password = DatabaseSettingViewModel.DatabaseModel.Password ?? "";
             SetClient();
-            //SetServer();
+        }
+
+        /// <summary>
+        /// Создает объект DataBase с указанными параметрами.
+        /// </summary>
+        /// <param name="connectionString">Строка подключения к серверу MongoDb.</param>
+        /// <param name="dbName">Название базы данных.</param>
+        /// <param name="login">Логин для подключения к MongoDb.</param>
+        /// <param name="password">Пароль для подключения к MongoDb.</param>
+        private DataBase(string connectionString, string dbName, string login = null, string password = null)
+        {
+            _connectionString = connectionString;
+            _mongoUrl = new MongoUrlBuilder(_connectionString);
+            _login = login ?? "";
+            _password = password ?? "";
+            SetClient();           
+            ChooseDatabase(dbName);
         }
 
         private static DataBase _dbInstance;
@@ -641,6 +649,22 @@ namespace DocumentAdder.Types.DataBase
         {
             if (_dbInstance != null) return _dbInstance;
             _dbInstance = new DataBase();
+            return _dbInstance;
+        }
+
+        /// <summary>
+        /// Нужен для реализации паттерна Singleton. 
+        /// Возвращает объект DataBase с указанными параметрами.
+        /// </summary>
+        /// <param name="connectionString">Строка подключения к серверу MongoDb.</param>
+        /// <param name="dbName">Название базы данных.</param>
+        /// <param name="login">Логин для подключения к MongoDb.</param>
+        /// <param name="password">Пароль для подключения к MongoDb.</param>
+        /// <returns>DataBase instance.</returns>
+        public static DataBase GetInstance(string connectionString, string dbName, string login = null, string password = null)
+        {
+            if (_dbInstance != null) return _dbInstance;
+            _dbInstance = new DataBase(connectionString, dbName, login, password);
             return _dbInstance;
         }
     }

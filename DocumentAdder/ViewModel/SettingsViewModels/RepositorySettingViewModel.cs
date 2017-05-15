@@ -25,9 +25,13 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
         private void AddLocalStorage()
         {
             List<string> selectedPaths = null;
-            var cofd = new CommonOpenFileDialog();
-            cofd.IsFolderPicker = true;
-            cofd.Multiselect = true;        
+            var cofd = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Multiselect = true,
+                Title = "Выберите папку (-и)"
+            };
+
 
             if (cofd.ShowDialog() == CommonFileDialogResult.Ok)
             {

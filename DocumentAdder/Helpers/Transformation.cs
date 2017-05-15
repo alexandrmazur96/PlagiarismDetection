@@ -8,16 +8,7 @@ using DocumentAdder.Types;
 namespace DocumentAdder.Helpers
 {
     public static class Transformation
-    {
-        public static string TransformFileFilter(string extStr)
-        {
-            string result = "";
-
-            var arrExtension = extStr.Split(',');
-
-            return result;
-        }
-
+    {        
         /// <summary>
         /// Трансформирует флаги (тип bool) с расширениями (из класса ProgramSettings) в строку, для дальнейшей работы.
         /// </summary>

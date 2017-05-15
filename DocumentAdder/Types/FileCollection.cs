@@ -36,13 +36,5 @@ namespace DocumentAdder.Types
         public string FileType { get; set; }
         
         #endregion
-
-        //public FileCollection(string fileName, string filePath, string fileType, object _id = null)
-        //{
-        //    this.FileId = _id;
-        //    FileName = fileName;
-        //    FilePath = filePath;
-        //    FileType = fileType;
-        //}
     }
 }

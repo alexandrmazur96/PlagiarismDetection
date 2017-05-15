@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -19,7 +18,7 @@ namespace DocumentAdder.ViewModel
         /// <summary>
         /// Количество поток, работающих в данный момент.
         /// </summary>
-        private static int _threadCount = 0;
+        private static int _threadCount;
 
         /// <summary>
         /// DispatcherTimer, нужен для non-stop работы приложения. Инициализируется в статическом 
@@ -40,7 +39,7 @@ namespace DocumentAdder.ViewModel
         /// <summary>
         /// Модель логов.
         /// </summary>
-        public static LogViewModel LogVM { get; set; }
+        public static LogViewModel LogVm { get; set; }
 
         #region Commands
         //main programm commands
@@ -83,7 +82,8 @@ namespace DocumentAdder.ViewModel
                 //Получаем пути файлов из репозитория.
                 var filePaths = DocumentActions.GetFilePaths();
 
-                //Получаем енумератор, для асинхронного (параллельного) "прохождения" по коллекции файлов.
+                //Получаем энумератор, для асинхронного (параллельного) "прохождения" по коллекции файлов.
+                if (filePaths == null) return;
                 var filePathEnumerator = filePaths.GetEnumerator();
 
                 //Поскольку программа работает параллельно, то выполнение потоков нужно отслеживать,
@@ -92,7 +92,7 @@ namespace DocumentAdder.ViewModel
                 var makeWorkTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
 
                 //Обработчик "локального" таймера. Отслеживает количество потоков и количество оставшихся файлов.                
-                EventHandler makeWorkHandler = (mwSender, mwArgs) =>
+                EventHandler makeWorkHandler = async (mwSender, mwArgs) =>
                 {
                     //Если текущее количество выполняемых потоков больше определенного количества
                     //(указывается в настройках), то текущий "тик" можно пропустить.
@@ -105,7 +105,7 @@ namespace DocumentAdder.ViewModel
                         if (filePathEnumerator.MoveNext())
                         {
                             //Обрабатываем файлы                            
-                            MakeWork2Async(filePathEnumerator.Current);
+                            await MakeWork2Async(filePathEnumerator.Current);
                         }
                         //Если файлов не осталось - останавливаем "локальный" таймер и выходим из цикла.
                         else
@@ -147,104 +147,6 @@ namespace DocumentAdder.ViewModel
             }
         }
 
-        private void MakeWork(IEnumerable<string> filePaths)
-        {
-            foreach (var filePath in filePaths)
-            {
-                var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
-                DocumentActions.Cyrillify(ref canonedTokens);
-                var extension = Path.GetExtension(filePath);
-                //эта переменная будет использоваться для занесения в базу пути файла и ее производных
-                var newFilePath = filePath;
-                //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
-                //то при вставке документа в БД используется новый формат *.docx
-                if (extension != null && extension.Equals(".doc"))
-                {
-                    newFilePath += "x";
-                }
-                newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                //Здесь будут хранится данные из имени файла.
-                string[] fileNameData;
-                try
-                {
-                    fileNameData = DocumentActions.SplitFileName(fileName);
-                }
-                catch (FileNameFormatException ex)
-                {
-                    LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
-                    fileNameData = new[]
-                    {
-                        "Undefined", //ФИО-автора
-                        "Undefined", //Группа автора
-                        fileName //Название работы
-                    };
-                }
-                //создаем новый документ <Document> для вставки в коллекцию
-                var insertDoc = new Document(
-                    fileNameData[2], //Здесь хранится имя документа
-                    fileNameData[0], //Здесь хранится ФИО автора документа
-                    fileNameData[1], //Здесь хранится группа автора документа
-                    newFilePath,
-                    Path.GetExtension(newFilePath),
-                    FileActions.FileHash(newFilePath),
-                    canonedTokens.ToArray(),
-                    DocumentActions.MakeTfVector(canonedTokens),
-                    File.GetLastWriteTime(newFilePath));
-                //вставляем в БД
-                DataBase.GetInstance().InsertDocument(insertDoc);
-            }
-        }
-
-        private static async void MakeWorkAsync(IEnumerable<string> filePaths)
-        {
-            foreach (var filePath in filePaths)
-            {
-                var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
-                DocumentActions.Cyrillify(ref canonedTokens);
-                var extension = Path.GetExtension(filePath);
-                //эта переменная будет использоваться для занесения в базу пути файла и ее производных
-                var newFilePath = filePath;
-                //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
-                //то при вставке документа в БД используется новый формат *.docx
-                if (extension != null && extension.Equals(".doc"))
-                {
-                    newFilePath += "x";
-                }
-                newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                //Здесь будут хранится данные из имени файла.
-                string[] fileNameData;
-                try
-                {
-                    fileNameData = DocumentActions.SplitFileName(fileName);
-                }
-                catch (FileNameFormatException ex)
-                {
-                    LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
-                    fileNameData = new[]
-                    {
-                        "Undefined", //ФИО-автора
-                        "Undefined", //Группа автора
-                        fileName //Название работы
-                    };
-                }
-                //создаем новый документ <Document> для вставки в коллекцию
-                var insertDoc = new Document(
-                    fileNameData[2], //Здесь хранится имя документа
-                    fileNameData[0], //Здесь хранится ФИО автора документа
-                    fileNameData[1], //Здесь хранится группа автора документа
-                    newFilePath,
-                    Path.GetExtension(newFilePath),
-                    FileActions.FileHash(newFilePath),
-                    canonedTokens.ToArray(),
-                    DocumentActions.MakeTfVector(canonedTokens),
-                    File.GetLastWriteTime(newFilePath));
-                //вставляем в БД
-                await DataBase.GetInstance().InsertDocumentAsync(insertDoc);
-            }
-        }
-
         /// <summary>
         /// Обработка файла по указанному пути.
         /// </summary>
@@ -256,8 +158,7 @@ namespace DocumentAdder.ViewModel
             if (await DataBase.GetInstance().CheckMongoConnection())
             {
                 //Инкрементируем к-ство выполняемых потоков.
-                //++_threadCount;
-                Console.WriteLine("Thread #" + ++_threadCount + " started!");
+                ++_threadCount;
                 var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
                 DocumentActions.Cyrillify(ref canonedTokens);
                 var extension = Path.GetExtension(filePath);
@@ -327,10 +228,10 @@ namespace DocumentAdder.ViewModel
                 var single = new MainSettingModel();
                 SettingModel = single;
             }
-            if (LogVM == null)
+            if (LogVm == null)
             {
                 var single = new LogViewModel();
-                LogVM = single;
+                LogVm = single;
             }
             if (DocumentAdderModel == null)
             {

@@ -65,7 +65,8 @@ namespace DocumentAdder.Actions
         static SaveOrLoadActions()
         {
             Serializer = new JsonSerializer();
-            SettingsPath = Path.Combine(Environment.CurrentDirectory, "settings.json");
+            SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + 
+                @"\PlagiarismDetection\" +  "da_settings.json";
         }
     }
 }
