@@ -71,6 +71,7 @@
             </ListView.View>
         </ListView>
         <ListView
+            x:Name="PlagiarismDetectResultsListView"
             Grid.Row="6"
             Margin="3"
             ItemsSource="{Binding Path=M_Model.HandledFiles}">
@@ -82,6 +83,14 @@
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem
+                        Click="MenuItemSelectExpandedResult_OnClick"
+                        Command="{Binding Path=ShowExpandedResultCommand}"
+                        Header="Показать подробности" />
+                </ContextMenu>
+            </ListView.ContextMenu>
         </ListView>
         <Button
             Grid.Row="3"

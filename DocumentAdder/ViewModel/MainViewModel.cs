@@ -159,49 +159,57 @@ namespace DocumentAdder.ViewModel
             {
                 //Инкрементируем к-ство выполняемых потоков.
                 ++_threadCount;
-                var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
-                DocumentActions.Cyrillify(ref canonedTokens);
-                var extension = Path.GetExtension(filePath);
-                //эта переменная будет использоваться для занесения в базу пути файла и ее производных
-                var newFilePath = filePath;
-                //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
-                //то при вставке документа в БД используется новый формат *.docx
-                if (extension != null && extension.Equals(".doc"))
+                if (!await DataBase.GetInstance().IsFileInDbAsync(FileActions.FileHash(filePath)))
                 {
-                    newFilePath += "x";
-                }
-                newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                //Здесь будут хранится данные из имени файла.
-                string[] fileNameData;
-                try
-                {
-                    fileNameData = DocumentActions.SplitFileName(fileName);
-                }
-                catch (FileNameFormatException ex)
-                {
-                    LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
-                    fileNameData = new[]
+                    var canonedTokens = DocumentActions.GetWordCanonedTokens(filePath);
+                    DocumentActions.Cyrillify(ref canonedTokens);
+                    var extension = Path.GetExtension(filePath);
+                    //эта переменная будет использоваться для занесения в базу пути файла и ее производных
+                    var newFilePath = filePath;
+                    //поскольку формат *.doc пересохраняется в *.docx после вызова метода GetWordCanonedTokens,
+                    //то при вставке документа в БД используется новый формат *.docx
+                    if (extension != null && extension.Equals(".doc"))
                     {
-                        "Undefined", //ФИО-автора
-                        "Undefined", //Группа автора
-                        fileName //Название работы
-                    };
+                        newFilePath += "x";
+                    }
+                    newFilePath = FileActions.FileMoveOrDelete(newFilePath, FileActionType.RenameAndMove);
+                    var fileName = Path.GetFileNameWithoutExtension(filePath);
+                    //Здесь будут хранится данные из имени файла.
+                    string[] fileNameData;
+                    try
+                    {
+                        fileNameData = DocumentActions.SplitFileName(fileName);
+                    }
+                    catch (FileNameFormatException ex)
+                    {
+                        LogViewModel.AddNewLog(ex.Message + " " + fileName, DateTime.Now, LogType.Information);
+                        fileNameData = new[]
+                        {
+                            "Undefined", //ФИО-автора
+                            "Undefined", //Группа автора
+                            fileName //Название работы
+                        };
+                    }
+                    //создаем новый документ <Document> для вставки в коллекцию
+                    var insertDoc = new Document(
+                        fileNameData[2], //Здесь хранится имя документа
+                        fileNameData[0], //Здесь хранится ФИО автора документа
+                        fileNameData[1], //Здесь хранится группа автора документа
+                        newFilePath,
+                        Path.GetExtension(newFilePath),
+                        FileActions.FileHash(newFilePath),
+                        canonedTokens.ToArray(),
+                        DocumentActions.MakeTfVector(canonedTokens),
+                        File.GetLastWriteTime(newFilePath));
+                    //вставляем в БД
+                    await DataBase.GetInstance().InsertDocumentAsync(insertDoc);
                 }
-                //создаем новый документ <Document> для вставки в коллекцию
-                var insertDoc = new Document(
-                    fileNameData[2], //Здесь хранится имя документа
-                    fileNameData[0], //Здесь хранится ФИО автора документа
-                    fileNameData[1], //Здесь хранится группа автора документа
-                    newFilePath,
-                    Path.GetExtension(newFilePath),
-                    FileActions.FileHash(newFilePath),
-                    canonedTokens.ToArray(),
-                    DocumentActions.MakeTfVector(canonedTokens),
-                    File.GetLastWriteTime(newFilePath));
-                //вставляем в БД
-                await DataBase.GetInstance().InsertDocumentAsync(insertDoc);
-
+                else
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(filePath);
+                    LogViewModel.AddNewLog("Файл " + fileName + " уже есть в базе данных!", DateTime.Now, LogType.Information);
+                    FileActions.FileMoveOrDelete(filePath, FileActionType.MoveDuplicate);
+                }
                 --_threadCount;
             }
             else
@@ -212,7 +220,7 @@ namespace DocumentAdder.ViewModel
         //settings methods
 
         //other methods
-
+        
         #endregion
 
         static MainViewModel()

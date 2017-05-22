@@ -1,27 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Iveonik.Stemmers
 {
 
     internal class Among
     {
 
-        public readonly int s_size; /* search string */
-        public readonly char[] s; /* search string */
-        public readonly int substring_i; /* index to longest matching substring */
-        public readonly int result; /* result of the lookup */
-        public delegate bool boolDel();
-        public readonly boolDel method; /* method to use if substring matches */
+        public readonly int SSize; /* search string */
+        public readonly char[] S; /* search string */
+        public readonly int SubstringI; /* index to longest matching substring */
+        public readonly int Result; /* result of the lookup */
+        public delegate bool BoolDel();
+        public readonly BoolDel Method; /* method to use if substring matches */
 
-        public Among(string s, int substring_i, int result, boolDel linkMethod)
+        public Among(string s, int substringI, int result, BoolDel linkMethod)
         {
-            this.s_size = s.Length;
-            this.s = s.ToCharArray();
-            this.substring_i = substring_i;
-            this.result = result;
-            this.method = linkMethod;
+            SSize = s.Length;
+            S = s.ToCharArray();
+            SubstringI = substringI;
+            Result = result;
+            Method = linkMethod;
         }
     }
 }

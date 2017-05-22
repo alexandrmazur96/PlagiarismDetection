@@ -607,6 +607,36 @@ namespace DocumentAdder.Types.DataBase
             }
         }
 
+        /// <summary>
+        /// Проверяет, находится ли файл в базе данных по его хеш-сумме.
+        /// </summary>
+        /// <param name="fileHash">Хеш-сумма файла.</param>
+        /// <returns>Логический результат нахождения файла в БД.</returns>
+        public bool IsFileInDb(string fileHash)
+        {
+            var docCollections = _database.GetCollection<BsonDocument>("documentCollection");
+
+            var filter = Builders<BsonDocument>.Filter.Eq("DocumentHash", fileHash);
+
+            return docCollections.Find(filter).Count() > 0;
+        }
+
+        /// <summary>
+        /// Асинхронно проверяет, находится ли файл в базе данных по его хеш-сумме.
+        /// </summary>
+        /// <param name="fileHash">Хеш-сумма.</param>
+        /// <returns>Логический результат нахождения файла в БД.</returns>
+        public async Task<bool> IsFileInDbAsync(string fileHash)
+        {
+            var docCollections = _database.GetCollection<BsonDocument>("documentCollection");
+
+            var filter = Builders<BsonDocument>.Filter.Eq("DocumentHash", fileHash);
+
+            var cursor = await docCollections.FindAsync(filter);
+
+            return cursor.Any();
+        }
+
         #endregion
         #endregion
 

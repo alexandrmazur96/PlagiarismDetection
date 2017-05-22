@@ -122,10 +122,16 @@
     <Compile Include="Actions\SaveOrLoadActions.cs" />
     <Compile Include="Helpers\PasswordBehavior.cs" />
     <Compile Include="Helpers\Transformations.cs" />
+    <Compile Include="Model\ExpandedResultModel.cs" />
     <Compile Include="Model\SettingsModel.cs" />
-    <Compile Include="Types\Document.cs" />
+    <Compile Include="Types\PlagiarismDetectExpandedResult.cs" />
     <Compile Include="Types\ProgramSettings.cs" />
+    <Compile Include="Helpers\ResultDispatcher.cs" />
+    <Compile Include="ViewModel\ExpandedResultViewModel.cs" />
     <Compile Include="ViewModel\SettingsViewModel.cs" />
+    <Compile Include="View\ExpandedResult.xaml.cs">
+      <DependentUpon>ExpandedResult.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Settings\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
@@ -134,6 +140,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\About\AboutProgramm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ExpandedResult.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

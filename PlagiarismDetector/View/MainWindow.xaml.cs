@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using PlagiarismDetector.Actions;
+using PlagiarismDetector.Types;
+using PlagiarismDetector.ViewModel;
 
 namespace PlagiarismDetector
 {
@@ -40,6 +42,12 @@ namespace PlagiarismDetector
             {
                 e.Cancel = true;
             }
+        }
+
+        private void MenuItemSelectExpandedResult_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (PlagiarismDetectResultsListView.SelectedItem is PlagiarismDetectResult plagiarismDetectResult)
+                MainViewModel.M_Model.SelectedResult = plagiarismDetectResult.SimilarityDocuments;
         }
     }
 }

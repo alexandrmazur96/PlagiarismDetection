@@ -5,31 +5,26 @@
  *  
  *  Most of stemmers are ported from Java by Iveonik Systems ltd. (www.iveonik.com)
  */
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Iveonik.Stemmers
 {
     public class EnglishStemmer : StemmerOperations, IStemmer
     {
-        private readonly static Among[] a_0 = 
+        private static readonly Among[] A0 = 
         {
             new Among ( "arsen", -1, -1,null ),
             new Among ( "commun", -1, -1, null ),
             new Among ( "gener", -1, -1, null )
         };
 
-
-        private readonly static Among[] a_1 = 
+        private static readonly Among[] A1 = 
         {
             new Among ( "'", -1, 1, null),
             new Among ( "'s'", 0, 1, null),
             new Among ( "'s", -1, 1, null)
         };
 
-
-        private readonly static Among[] a_2 = 
+        private static readonly Among[] A2 = 
         {
             new Among ( "ied", -1, 2, null),
             new Among ( "s", -1, 3, null),
@@ -39,8 +34,7 @@ namespace Iveonik.Stemmers
             new Among ( "us", 1, -1, null)
         };
 
-
-        private readonly static Among[] a_3 = 
+        private static readonly Among[] A3 = 
         {
             new Among ( "", -1, 3, null),
             new Among ( "bb", 0, 2, null),
@@ -56,9 +50,8 @@ namespace Iveonik.Stemmers
             new Among ( "tt", 0, 2, null),
             new Among ( "iz", 0, 1, null)
         };
-
-
-        private readonly static Among[] a_4 = 
+    
+        private static readonly Among[] A4 = 
         {
             new Among ( "ed", -1, 2, null),
             new Among ( "eed", 0, 1, null),
@@ -66,10 +59,9 @@ namespace Iveonik.Stemmers
             new Among ( "edly", -1, 2, null),
             new Among ( "eedly", 3, 1, null),
             new Among ( "ingly", -1, 2, null)
-        };
+        };    
 
-
-        private readonly static Among[] a_5 = 
+        private static readonly Among[] A5 = 
         {
             new Among ( "anci", -1, 3, null),
             new Among ( "enci", -1, 2, null),
@@ -97,10 +89,7 @@ namespace Iveonik.Stemmers
             new Among ( "ousness", -1, 10, null)
         };
 
-
-
-
-        private readonly static Among[] a_6 = 
+        private static readonly Among[] A6 = 
         {
             new Among ( "icate", -1, 4, null),
             new Among ( "ative", -1, 6, null),
@@ -111,11 +100,9 @@ namespace Iveonik.Stemmers
             new Among ( "ational", 5, 2, null),
             new Among ( "ful", -1, 5, null),
             new Among ( "ness", -1, 5, null)
-        };
+        };  
 
-
-
-        private readonly static Among[] a_7 = 
+        private static readonly Among[] A7 = 
         {
             new Among ( "ic", -1, 1, null),
             new Among ( "ance", -1, 1, null),
@@ -137,17 +124,13 @@ namespace Iveonik.Stemmers
             new Among ( "ement", 16, 1, null)
         };
 
-
-
-
-        private readonly static Among[] a_8 = 
+        private static readonly Among[] A8 = 
         {
             new Among ( "e", -1, 1, null),
             new Among ( "l", -1, 2, null)
         };
 
-
-        private readonly static Among[] a_9 = 
+        private static readonly Among[] A9 = 
         {
             new Among ( "succeed", -1, -1, null),
             new Among ( "proceed", -1, -1, null),
@@ -159,9 +142,7 @@ namespace Iveonik.Stemmers
             new Among ( "outing", -1, -1, null)
         };
 
-
-
-        private readonly static Among[] a_10 = 
+        private static readonly Among[] A10 = 
         {
             new Among ( "andes", -1, -1, null),
             new Among ( "atlas", -1, -1, null),
@@ -185,22 +166,22 @@ namespace Iveonik.Stemmers
 
 
 
-        private static readonly char[] g_v = { (char)17, (char)65, (char)16, (char)1 };
+        private static readonly char[] Gv = { (char)17, (char)65, (char)16, (char)1 };
 
-        private static readonly char[] g_v_WXY = { (char)1, (char)17, (char)65, (char)208, (char)1 };
+        private static readonly char[] GvWxy = { (char)1, (char)17, (char)65, (char)208, (char)1 };
 
-        private static readonly char[] g_valid_LI = { (char)55, (char)141, (char)2 };
+        private static readonly char[] GValidLi = { (char)55, (char)141, (char)2 };
 
-        private bool B_Y_found;
-        private int I_p2;
-        private int I_p1;
+        private bool _bYFound;
+        private int _p2;
+        private int _p1;
 
 
         private void copy_from(EnglishStemmer other)
         {
-            B_Y_found = other.B_Y_found;
-            I_p2 = other.I_p2;
-            I_p1 = other.I_p1;
+            _bYFound = other._bYFound;
+            _p2 = other._p2;
+            _p1 = other._p1;
             copy_from(other);
         }
 
@@ -216,7 +197,7 @@ namespace Iveonik.Stemmers
             int v_5;
             // (, line 25
             // unset Y_found, line 26
-            B_Y_found = false;
+            _bYFound = false;
             // do, line 27
             v_1 = cursor;
             //        lab0:
@@ -253,7 +234,7 @@ namespace Iveonik.Stemmers
                 // <-, line 28
                 slice_from("Y");
                 // set Y_found, line 28
-                B_Y_found = true;
+                _bYFound = true;
             } while (false);
             cursor = v_2;
             // do, line 29
@@ -275,7 +256,7 @@ namespace Iveonik.Stemmers
                             do
                             {
                                 // (, line 29
-                                if (!(in_grouping(g_v, 97, 121)))
+                                if (!(in_grouping(Gv, 97, 121)))
                                 {
                                     break;
                                 }
@@ -306,7 +287,7 @@ namespace Iveonik.Stemmers
                         // <-, line 29
                         slice_from("Y");
                         // set Y_found, line 29
-                        B_Y_found = true;
+                        _bYFound = true;
                         if (returnn)
                         {
                             goto replab3;
@@ -327,8 +308,8 @@ namespace Iveonik.Stemmers
             int v_1;
             int v_2;
             // (, line 32
-            I_p1 = limit;
-            I_p2 = limit;
+            _p1 = limit;
+            _p2 = limit;
             // do, line 35
             v_1 = cursor;
             do
@@ -341,7 +322,7 @@ namespace Iveonik.Stemmers
                     do
                     {
                         // among, line 36
-                        if (find_among(a_0, 3) == 0)
+                        if (find_among(A0, 3) == 0)
                         {
                             break;
                         }
@@ -356,7 +337,7 @@ namespace Iveonik.Stemmers
                     {
                         do
                         {
-                            if (!(in_grouping(g_v, 97, 121)))
+                            if (!(in_grouping(Gv, 97, 121)))
                             {
                                 break;
                             }
@@ -375,7 +356,7 @@ namespace Iveonik.Stemmers
                     {
                         do
                         {
-                            if (!(out_grouping(g_v, 97, 121)))
+                            if (!(out_grouping(Gv, 97, 121)))
                             {
                                 break;
                             }
@@ -392,13 +373,13 @@ namespace Iveonik.Stemmers
                     }
                 } while (false);
                 // setmark p1, line 42
-                I_p1 = cursor;
+                _p1 = cursor;
                 // gopast, line 43
                 while (true)
                 {
                     do
                     {
-                        if (!(in_grouping(g_v, 97, 121)))
+                        if (!(in_grouping(Gv, 97, 121)))
                         {
                             break;
                         }
@@ -417,7 +398,7 @@ namespace Iveonik.Stemmers
                 {
                     do
                     {
-                        if (!(out_grouping(g_v, 97, 121)))
+                        if (!(out_grouping(Gv, 97, 121)))
                         {
                             break;
                         }
@@ -432,7 +413,7 @@ namespace Iveonik.Stemmers
                     cursor++;
                 }
                 // setmark p2, line 43
-                I_p2 = cursor;
+                _p2 = cursor;
             } while (false);
         breaklab0:
             cursor = v_1;
@@ -453,15 +434,15 @@ namespace Iveonik.Stemmers
                 do
                 {
                     // (, line 50
-                    if (!(out_grouping_b(g_v_WXY, 89, 121)))
+                    if (!(out_grouping_b(GvWxy, 89, 121)))
                     {
                         break;
                     }
-                    if (!(in_grouping_b(g_v, 97, 121)))
+                    if (!(in_grouping_b(Gv, 97, 121)))
                     {
                         break;
                     }
-                    if (!(out_grouping_b(g_v, 97, 121)))
+                    if (!(out_grouping_b(Gv, 97, 121)))
                     {
                         break;
                     }
@@ -471,11 +452,11 @@ namespace Iveonik.Stemmers
                 if (subroot) { subroot = false; break; }
                 cursor = limit - v_1;
                 // (, line 52
-                if (!(out_grouping_b(g_v, 97, 121)))
+                if (!(out_grouping_b(Gv, 97, 121)))
                 {
                     return false;
                 }
-                if (!(in_grouping_b(g_v, 97, 121)))
+                if (!(in_grouping_b(Gv, 97, 121)))
                 {
                     return false;
                 }
@@ -490,7 +471,7 @@ namespace Iveonik.Stemmers
 
         private bool r_R1()
         {
-            if (!(I_p1 <= cursor))
+            if (!(_p1 <= cursor))
             {
                 return false;
             }
@@ -499,7 +480,7 @@ namespace Iveonik.Stemmers
 
         private bool r_R2()
         {
-            if (!(I_p2 <= cursor))
+            if (!(_p2 <= cursor))
             {
                 return false;
             }
@@ -522,7 +503,7 @@ namespace Iveonik.Stemmers
                 // [, line 60
                 ket = cursor;
                 // substring, line 60
-                among_var = find_among_b(a_1, 3);
+                among_var = find_among_b(A1, 3);
                 if (among_var == 0)
                 {
                     cursor = limit - v_1;
@@ -547,7 +528,7 @@ namespace Iveonik.Stemmers
             // [, line 65
             ket = cursor;
             // substring, line 65
-            among_var = find_among_b(a_2, 6);
+            among_var = find_among_b(A2, 6);
             if (among_var == 0)
             {
                 return false;
@@ -606,7 +587,7 @@ namespace Iveonik.Stemmers
                     {
                         do
                         {
-                            if (!(in_grouping_b(g_v, 97, 121)))
+                            if (!(in_grouping_b(Gv, 97, 121)))
                             {
                                 break;
                             }
@@ -639,7 +620,7 @@ namespace Iveonik.Stemmers
             // [, line 75
             ket = cursor;
             // substring, line 75
-            among_var = find_among_b(a_4, 6);
+            among_var = find_among_b(A4, 6);
             if (among_var == 0)
             {
                 return false;
@@ -669,7 +650,7 @@ namespace Iveonik.Stemmers
                     {
                         do
                         {
-                            if (!(in_grouping_b(g_v, 97, 121)))
+                            if (!(in_grouping_b(Gv, 97, 121)))
                             {
                                 break;
                             }
@@ -689,7 +670,7 @@ namespace Iveonik.Stemmers
                     // test, line 81
                     v_3 = limit - cursor;
                     // substring, line 81
-                    among_var = find_among_b(a_3, 13);
+                    among_var = find_among_b(A3, 13);
                     if (among_var == 0)
                     {
                         return false;
@@ -726,7 +707,7 @@ namespace Iveonik.Stemmers
                         case 3:
                             // (, line 87
                             // atmark, line 87
-                            if (cursor != I_p1)
+                            if (cursor != _p1)
                             {
                                 return false;
                             }
@@ -786,7 +767,7 @@ namespace Iveonik.Stemmers
             } while (false);
             // ], line 94
             bra = cursor;
-            if (!(out_grouping_b(g_v, 97, 121)))
+            if (!(out_grouping_b(Gv, 97, 121)))
             {
                 return false;
             }
@@ -821,7 +802,7 @@ namespace Iveonik.Stemmers
             // [, line 100
             ket = cursor;
             // substring, line 100
-            among_var = find_among_b(a_5, 24);
+            among_var = find_among_b(A5, 24);
             if (among_var == 0)
             {
                 return false;
@@ -919,7 +900,7 @@ namespace Iveonik.Stemmers
                     break;
                 case 16:
                     // (, line 122
-                    if (!(in_grouping_b(g_valid_LI, 99, 116)))
+                    if (!(in_grouping_b(GValidLi, 99, 116)))
                     {
                         return false;
                     }
@@ -938,7 +919,7 @@ namespace Iveonik.Stemmers
             // [, line 127
             ket = cursor;
             // substring, line 127
-            among_var = find_among_b(a_6, 9);
+            among_var = find_among_b(A6, 9);
             if (among_var == 0)
             {
                 return false;
@@ -1003,7 +984,7 @@ namespace Iveonik.Stemmers
             // [, line 141
             ket = cursor;
             // substring, line 141
-            among_var = find_among_b(a_7, 18);
+            among_var = find_among_b(A7, 18);
             if (among_var == 0)
             {
                 return false;
@@ -1067,7 +1048,7 @@ namespace Iveonik.Stemmers
             // [, line 150
             ket = cursor;
             // substring, line 150
-            among_var = find_among_b(a_8, 2);
+            among_var = find_among_b(A8, 2);
             if (among_var == 0)
             {
                 return false;
@@ -1150,7 +1131,7 @@ namespace Iveonik.Stemmers
             // [, line 158
             ket = cursor;
             // substring, line 158
-            if (find_among_b(a_9, 8) == 0)
+            if (find_among_b(A9, 8) == 0)
             {
                 return false;
             }
@@ -1172,7 +1153,7 @@ namespace Iveonik.Stemmers
             // [, line 170
             bra = cursor;
             // substring, line 170
-            among_var = find_among(a_10, 18);
+            among_var = find_among(A10, 18);
             if (among_var == 0)
             {
                 return false;
@@ -1256,7 +1237,7 @@ namespace Iveonik.Stemmers
             int v_2;
             // (, line 203
             // Boolean test Y_found, line 203
-            if (!(B_Y_found))
+            if (!(_bYFound))
             {
                 return false;
             }

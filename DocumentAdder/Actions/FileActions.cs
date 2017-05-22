@@ -68,8 +68,8 @@ namespace DocumentAdder.Actions
         }
 
         /// <summary>
-        /// Выполняет одно из трех действий с указанным файлом, в зависимости от выбраного действия.
-        /// Перемещение, удаление, переиминование и перемещение.
+        /// Выполняет одно из действий с указанным файлом, в зависимости от выбраного действия.
+        /// Перемещение, удаление, переиминование и перемещение, перемещение дубликата.
         /// </summary>
         /// <param name="filePath">Путь к файлу, с которым нужно выполнить действие.</param>
         /// <param name="action">Возможное действие с файлом. Объект enum-типа FileActionType.</param>
@@ -100,6 +100,27 @@ namespace DocumentAdder.Actions
                         File.Move(filePath, newFilePath);
                         File.Delete(filePath);
                         return newFilePath;
+                    }
+                    return null;
+                case MoveDuplicate:
+                    if (File.Exists(filePath))
+                    {
+                        var duplicateDirectory = ProgramSettings.GetInstance().ReplacePath + "/Duplicate";
+                        if (Directory.Exists(duplicateDirectory))
+                        {
+                            var newFilePath = duplicateDirectory + "/" + Path.GetFileName(filePath);
+                            File.Move(filePath, newFilePath);
+                            File.Delete(filePath);
+                        }
+                        else
+                        {
+                            Directory.CreateDirectory(duplicateDirectory);
+                            var newFilePath = duplicateDirectory + "/" + Path.GetFileName(filePath);
+                            File.Move(filePath, newFilePath);
+                            File.Delete(filePath);
+                        }
+
+                        return null;
                     }
                     return null;
                 default:

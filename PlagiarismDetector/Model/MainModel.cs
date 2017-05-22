@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PlagiarismDetector.Types;
+using PlagiarismDetector.View;
 using PlagiarismDetector.View.About;
 using PlagiarismDetector.View.Settings;
 
@@ -114,6 +115,10 @@ namespace PlagiarismDetector.Model
             }
         }
 
+        /// <summary>
+        /// Показывает, какой результат выбран для показа как расширенный (expanded).
+        /// </summary>
+        public ObservableCollection<PlagiarismDetectExpandedResult> SelectedResult { get; set; }    
         #endregion
 
         /// <summary>
@@ -159,6 +164,11 @@ namespace PlagiarismDetector.Model
         /// Окно "Настройки".
         /// </summary>
         public Settings SettingsWindow { get; set; }
+
+        /// <summary>
+        /// Окно "Расширенного результата".
+        /// </summary>
+        public ExpandedResult ExpandedResultWindow { get; set; }
         #endregion        
 
         public MainModel()

@@ -17,17 +17,20 @@ using PlagiarismDetector.View.About;
 using PlagiarismDetector.View.Settings;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using DocumentAdder.Actions;
 using DocumentAdder.Actions.DocumentAction;
 using DocumentAdder.Types.DataBase;
+using PlagiarismDetector.View;
 using FontStyle = System.Drawing.FontStyle;
+using ProgramSettings = PlagiarismDetector.Types.ProgramSettings;
 
 namespace PlagiarismDetector.ViewModel
 {
     public class MainViewModel
     {
-        private static int _threadCount = 0;
+        private static int _threadCount;
 
-        public MainModel M_Model { get; }
+        public static MainModel M_Model { get; }
 
         private DispatcherTimer AutoWorkTimer { get; }
 
@@ -54,6 +57,8 @@ namespace PlagiarismDetector.ViewModel
         public ICommand ShowAboutAuthorCommand { get; private set; }
 
         public ICommand ShowSettingsCommand { get; private set; }
+
+        public ICommand ShowExpandedResultCommand { get; private set; }
         #endregion
 
         #region Methods
@@ -184,7 +189,7 @@ namespace PlagiarismDetector.ViewModel
             var result = new StringBuilder();
 
             result.Append("Creating date - ").Append(DateTime.Now.ToLongDateString()).AppendLine();
-            result.AppendLine($"{"File Name:",-50}{"Plagiarism Result:",10}");
+            result.AppendLine($"{"File Name:",-50}{"Plagiarism Result:", 10}");
 
 
             foreach (var handledFile in M_Model.HandledFiles)
@@ -317,28 +322,47 @@ namespace PlagiarismDetector.ViewModel
             {
                 if (await _dbInstance.CheckMongoConnection())
                 {
-                    var documentTfIdfDict = await DocumentActions.MakeTfIdfVectorAsync(
-                        DocumentActions.MakeTfVector(DocumentActions.GetWordCanonedTokens(filePath)));
-
-                    var allDocuments = await _dbInstance.GetAllDocumentsAsync();
-
-                    foreach (var document in allDocuments)
+                    if (!await _dbInstance.IsFileInDbAsync(FileActions.FileHash(filePath)))
                     {
-                        var currentDocumentTfIdfDict = await DocumentActions.MakeTfIdfVectorAsync(
-                            document.DocumentTfVector);
+                        var documentTfIdfDict = await DocumentActions.MakeTfIdfVectorAsync(
+                            DocumentActions.MakeTfVector(DocumentActions.GetWordCanonedTokens(filePath)));
 
-                        var vectors = MakeVectorsForCompare(currentDocumentTfIdfDict, documentTfIdfDict);
+                        var allDocuments = await _dbInstance.GetAllDocumentsAsync();
 
-                        var cosineSimilarity = Cosine_similarity(vectors.Item1, vectors.Item2);
+                        var cosineSimilarityList = new List<double>();
 
-                        Console.WriteLine(cosineSimilarity.ToString());
+                        var similarityDocuments = new List<PlagiarismDetectExpandedResult>();
+
+                        foreach (var document in allDocuments)
+                        {
+                            var currentDocumentTfIdfDict = await DocumentActions.MakeTfIdfVectorAsync(
+                                document.DocumentTfVector);
+
+                            var vectors = MakeVectorsForCompare(currentDocumentTfIdfDict, documentTfIdfDict);
+
+                            var cosineSim = Cosine_similarity(vectors.Item1, vectors.Item2);
+
+                            cosineSimilarityList.Add(cosineSim);
+
+                            if (cosineSim >= 0.4)
+                            {
+                                similarityDocuments.Add(new PlagiarismDetectExpandedResult(document.DocumentPath, document.DocumentName, cosineSim));
+                            }
+                        }
+
+                        M_Model.HandledFiles.Add(new PlagiarismDetectResult(Path.GetFileNameWithoutExtension(filePath),
+                            cosineSimilarityList.Max() * 100, similarityDocuments));
+                        
+                    }
+                    else
+                    {
+                        M_Model.HandledFiles.Add(new PlagiarismDetectResult(Path.GetFileNameWithoutExtension(filePath), 100));
                     }
                 }
             }
             catch (Exception e)
             {
-                await Console.Error.WriteLineAsync("Не удалось подключиться к серверу MongoDb! \nВыполнение дальнейшей работы невозможно!\n" +
-                    e.Message + "\n" + e.ToString());
+                await Console.Error.WriteLineAsync("Не удалось подключиться к серверу MongoDb! \nВыполнение дальнейшей работы невозможно!\n" + e);
                 StopProgramm();
             }
             _threadCount--;
@@ -367,7 +391,7 @@ namespace PlagiarismDetector.ViewModel
             return double.IsNaN(result) ? 0 : result;
         }
 
-        /// <summary5>
+        /// <summary>
         /// Создает два вектора одинаковых размеров (равные Length) на основании двух словарей TF*IDF значений.
         /// </summary>
         /// <param name="doc1">Документ 1.</param>
@@ -414,7 +438,7 @@ namespace PlagiarismDetector.ViewModel
         /// <summary>
         /// Меняет флаги "включения" на кнопках, в зависимости от результатов работы.
         /// </summary>
-        private void CheckButtonsEnabled()
+        private static void CheckButtonsEnabled()
         {
             if (M_Model.HandledFiles.Count > 0)
             {
@@ -432,7 +456,7 @@ namespace PlagiarismDetector.ViewModel
             M_Model.IsStartBtnEnabled = M_Model.UncheckedFiles.Count > 0;
         }
 
-        private DataBase ReinitDbInstance()
+        private static void ReinitDbInstance()
         {
             try
             {
@@ -440,20 +464,29 @@ namespace PlagiarismDetector.ViewModel
                     ProgramSettings.GetInstance().DataBaseName,
                     ProgramSettings.GetInstance().Login,
                     ProgramSettings.GetInstance().Password);
-                return _dbInstance;
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine("Скорее всего, не удалось подключиться к серверу MongoDb.\n" + e.Message);
                 _dbInstance = null;
             }
-            return _dbInstance;
+        }
+
+        private static void ShowExpandedResult()
+        {
+            ResultDispatcher.SimilarityResult = M_Model.SelectedResult;
+            M_Model.ExpandedResultWindow = new ExpandedResult();
+            M_Model.ExpandedResultWindow.ShowDialog();
         }
         #endregion
 
-        public MainViewModel()
+        static MainViewModel()
         {
             M_Model = new MainModel();
+        }
+
+        public MainViewModel()
+        {
 
             ChooseFilesCommand = new DelegateCommand(action => ChooseFiles());
             ExitCommand = new DelegateCommand(action => Exit());
@@ -465,6 +498,7 @@ namespace PlagiarismDetector.ViewModel
             StartCommand = new DelegateCommand(action => StartProgramm());
             StopCommand = new DelegateCommand(action => StopProgramm());
             ClearResultCommand = new DelegateCommand(action => ClearResult());
+            ShowExpandedResultCommand = new DelegateCommand(action => ShowExpandedResult());
 
             AutoWorkTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
 
