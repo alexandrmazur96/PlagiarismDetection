@@ -45,27 +45,17 @@
                 </ContextMenu>
             </ListBox.ContextMenu>
         </ListBox>
-        <StackPanel
+        <Button
             Grid.Row="2"
+            Grid.Column="0"
             Grid.ColumnSpan="2"
-            Margin="0,10,0,0"
+            MinWidth="100"
+            MinHeight="28"
+            Margin="0,0,0,10"
+            Padding="5,0,5,0"
             HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            Orientation="Vertical">
-            <Button
-                MinWidth="100"
-                MinHeight="28"
-                Margin="0,0,0,10"
-                Padding="5,0,5,0"
-                Command="{Binding Path=AddLocalStorageCommand}"
-                Content="{x:Static res:Resources.RepositoryStngAddLocalBtn}" />
-            <Button
-                Height="28"
-                MinWidth="100"
-                MinHeight="28"
-                Margin="0,0,0,0"
-                Command="{Binding Path=ShowFtpStorageCommand}"
-                Content="{x:Static res:Resources.RepositoryStngAddFtpBtn}" />
-        </StackPanel>
+            VerticalAlignment="Center"
+            Command="{Binding Path=AddLocalStorageCommand}"
+            Content="{x:Static res:Resources.RepositoryStngAddLocalBtn}" />
     </Grid>
 </Page>

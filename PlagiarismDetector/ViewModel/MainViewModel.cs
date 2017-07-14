@@ -59,6 +59,7 @@ namespace PlagiarismDetector.ViewModel
         public ICommand ShowSettingsCommand { get; private set; }
 
         public ICommand ShowExpandedResultCommand { get; private set; }
+
         #endregion
 
         #region Methods
@@ -66,7 +67,7 @@ namespace PlagiarismDetector.ViewModel
         /// <summary>
         /// Выбирает файлы для проверки.
         /// </summary>
-        private void ChooseFiles()
+        private static void ChooseFiles()
         {
             var cofd = new CommonOpenFileDialog
             {
@@ -115,7 +116,7 @@ namespace PlagiarismDetector.ViewModel
 
             var uncheckedFilesEnumerator = fileLists.GetEnumerator();
 
-            var makeWorkTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+            var makeWorkTimer = new DispatcherTimer {Interval = TimeSpan.FromSeconds(10)};
 
             EventHandler autoWorkHandler = (sender, args) =>
             {
@@ -175,7 +176,7 @@ namespace PlagiarismDetector.ViewModel
         /// <summary>
         /// Асинхронная запись результатов в файл.
         /// </summary>
-        private async void SaveToFile()
+        private static async void SaveToFile()
         {
             var cofd = new CommonOpenFileDialog
             {
@@ -189,12 +190,13 @@ namespace PlagiarismDetector.ViewModel
             var result = new StringBuilder();
 
             result.Append("Creating date - ").Append(DateTime.Now.ToLongDateString()).AppendLine();
-            result.AppendLine($"{"File Name:",-50}{"Plagiarism Result:", 10}");
+            result.AppendLine($"{"File Name:",-50}{"Plagiarism Result:",10}");
 
 
             foreach (var handledFile in M_Model.HandledFiles)
             {
-                result.AppendLine($"{handledFile.FileName,-50}{handledFile.Value.ToString(CultureInfo.CurrentCulture),10}");
+                result.AppendLine(
+                    $"{handledFile.FileName,-50}{handledFile.Value.ToString(CultureInfo.CurrentCulture),10}");
             }
 
             var resultFile = new FileInfo(cofd.FileName);
@@ -219,9 +221,11 @@ namespace PlagiarismDetector.ViewModel
 
         /// <summary>
         /// Печать результата.
+        /// @todo доделать печать результата
         /// </summary>
-        private void PrintResult()
+        private static void PrintResult()
         {
+            throw new NotImplementedException("Не реализовано!");
             var pd = new PrintDialog();
             if (pd.ShowDialog() == true)
             {
@@ -238,7 +242,8 @@ namespace PlagiarismDetector.ViewModel
 
                     foreach (var handledFile in M_Model.HandledFiles)
                     {
-                        result.AppendLine($"{handledFile.FileName,-50}{handledFile.Value.ToString(CultureInfo.CurrentCulture),10}");
+                        result.AppendLine(
+                            $"{handledFile.FileName,-50}{handledFile.Value.ToString(CultureInfo.CurrentCulture),10}");
                     }
 
                     int y;
@@ -248,17 +253,15 @@ namespace PlagiarismDetector.ViewModel
                 };
 
                 doc.PrintPage += ppeh;
-
             }
 
             throw new NotImplementedException();
-
         }
 
         /// <summary>
         /// Очищает результаты работы приложения.
         /// </summary>
-        private void ClearResult()
+        private static void ClearResult()
         {
             var acceptClear = MessageBox.Show("Вы подтверждаете очистку всех результатов проверки?",
                 "Подтверждение очистки",
@@ -290,7 +293,7 @@ namespace PlagiarismDetector.ViewModel
         /// <summary>
         /// Показать настройки.
         /// </summary>
-        private void ShowSettings()
+        private static void ShowSettings()
         {
             M_Model.SettingsWindow = new Settings();
             M_Model.SettingsWindow.ShowDialog();
@@ -299,7 +302,7 @@ namespace PlagiarismDetector.ViewModel
         /// <summary>
         /// Показать "о программе".
         /// </summary>
-        private void ShowAboutProgramm()
+        private static void ShowAboutProgramm()
         {
             M_Model.AboutProgrammWindow = new AboutProgramm();
             M_Model.AboutProgrammWindow.ShowDialog();
@@ -308,7 +311,7 @@ namespace PlagiarismDetector.ViewModel
         /// <summary>
         /// Показать "об авторе".
         /// </summary>
-        private void ShowAboutAuthor()
+        private static void ShowAboutAuthor()
         {
             M_Model.AboutAuthorWindow = new AboutAuthor();
             M_Model.AboutAuthorWindow.ShowDialog();
@@ -346,23 +349,25 @@ namespace PlagiarismDetector.ViewModel
 
                             if (cosineSim >= 0.4)
                             {
-                                similarityDocuments.Add(new PlagiarismDetectExpandedResult(document.DocumentPath, document.DocumentName, cosineSim));
+                                similarityDocuments.Add(new PlagiarismDetectExpandedResult(document.DocumentPath,
+                                    document.DocumentName, cosineSim));
                             }
                         }
 
                         M_Model.HandledFiles.Add(new PlagiarismDetectResult(Path.GetFileNameWithoutExtension(filePath),
                             cosineSimilarityList.Max() * 100, similarityDocuments));
-                        
                     }
                     else
                     {
-                        M_Model.HandledFiles.Add(new PlagiarismDetectResult(Path.GetFileNameWithoutExtension(filePath), 100));
+                        M_Model.HandledFiles.Add(new PlagiarismDetectResult(Path.GetFileNameWithoutExtension(filePath),
+                            100));
                     }
                 }
             }
             catch (Exception e)
             {
-                await Console.Error.WriteLineAsync("Не удалось подключиться к серверу MongoDb! \nВыполнение дальнейшей работы невозможно!\n" + e);
+                await Console.Error.WriteLineAsync(
+                    "Не удалось подключиться к серверу MongoDb! \nВыполнение дальнейшей работы невозможно!\n" + e);
                 StopProgramm();
             }
             _threadCount--;
@@ -423,15 +428,6 @@ namespace PlagiarismDetector.ViewModel
                 iter++;
             }
 
-            //if (doc2.Count <= 0) return Tuple.Create(vector1, vector2);
-
-            //foreach (var item in doc2)
-            //{
-            //    vector1[iter] = 0;
-            //    vector2[iter] = item.Value;
-            //    iter++;
-            //}
-
             return Tuple.Create(vector1, vector2);
         }
 
@@ -478,6 +474,7 @@ namespace PlagiarismDetector.ViewModel
             M_Model.ExpandedResultWindow = new ExpandedResult();
             M_Model.ExpandedResultWindow.ShowDialog();
         }
+
         #endregion
 
         static MainViewModel()
@@ -487,7 +484,6 @@ namespace PlagiarismDetector.ViewModel
 
         public MainViewModel()
         {
-
             ChooseFilesCommand = new DelegateCommand(action => ChooseFiles());
             ExitCommand = new DelegateCommand(action => Exit());
             PrintResultCommand = new DelegateCommand(action => PrintResult());
@@ -500,7 +496,7 @@ namespace PlagiarismDetector.ViewModel
             ClearResultCommand = new DelegateCommand(action => ClearResult());
             ShowExpandedResultCommand = new DelegateCommand(action => ShowExpandedResult());
 
-            AutoWorkTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
+            AutoWorkTimer = new DispatcherTimer {Interval = TimeSpan.FromHours(1)};
 
             try
             {

@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentAdder", "DocumentAdder\DocumentAdder.csproj", "{0D5C3D8C-24E1-4E7B-BD50-A8DA850AC7A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "Examples\Examples.csproj", "{40A66CD7-C546-4853-804E-694513367E72}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlagiarismDetector", "PlagiarismDetector\PlagiarismDetector.csproj", "{B5551AA5-1844-45F7-AF66-F4B4FC569362}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StemmersNet", "StemmersNet\StemmersNet\StemmersNet.csproj", "{8F8C88DD-F172-4964-A49C-976437C7B538}"
@@ -33,18 +31,6 @@ Global
 		{0D5C3D8C-24E1-4E7B-BD50-A8DA850AC7A5}.Release|x64.Build.0 = Release|Any CPU
 		{0D5C3D8C-24E1-4E7B-BD50-A8DA850AC7A5}.Release|x86.ActiveCfg = Release|Any CPU
 		{0D5C3D8C-24E1-4E7B-BD50-A8DA850AC7A5}.Release|x86.Build.0 = Release|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Debug|x64.Build.0 = Debug|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Debug|x86.Build.0 = Debug|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Release|x64.ActiveCfg = Release|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Release|x64.Build.0 = Release|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Release|x86.ActiveCfg = Release|Any CPU
-		{40A66CD7-C546-4853-804E-694513367E72}.Release|x86.Build.0 = Release|Any CPU
 		{B5551AA5-1844-45F7-AF66-F4B4FC569362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5551AA5-1844-45F7-AF66-F4B4FC569362}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5551AA5-1844-45F7-AF66-F4B4FC569362}.Debug|x64.ActiveCfg = Debug|Any CPU

@@ -21,6 +21,9 @@ namespace PlagiarismDetector.ViewModel
             Model = new ExpandedResultModel();
         }
 
+        /// <summary>
+        /// Реализация функционала "Открыть в проводнике".
+        /// </summary>
         private static void OpenInExplorer()
         {
             var prFolder = new Process();

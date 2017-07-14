@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B5551AA5-1844-45F7-AF66-F4B4FC569362}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>PlagiarismDetector</RootNamespace>
     <AssemblyName>PlagiarismDetector</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
@@ -156,7 +156,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Helpers\DelegateCommand.cs" />
-    <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Model\BaseModel.cs" />
     <Compile Include="Model\MainModel.cs" />
     <Compile Include="Types\PlagiarismDetectResult.cs" />
@@ -203,9 +202,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utilities\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\DocumentAdder\DocumentAdder.csproj">
       <Project>{0d5c3d8c-24e1-4e7b-bd50-a8da850ac7a5}</Project>

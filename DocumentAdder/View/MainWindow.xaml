@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:DocumentAdder"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:res="clr-namespace:DocumentAdder.Properties"
     xmlns:vm="clr-namespace:DocumentAdder.ViewModel"
@@ -90,81 +89,14 @@
                             Content="{x:Static res:Resources.MainStopBtnName}"
                             IsEnabled="{Binding Path=DocumentAdderModel.IsStopBtnEnabled}" />
                         <ProgressBar
-                            Width="250"
+                            Width="357"
                             MinHeight="20"
-                            Margin="100,0,0,0"
+                            Margin="100,4,0,3"
                             VerticalAlignment="Center"
-                            Background="DarkOrchid"
                             IsIndeterminate="{Binding DocumentAdderModel.IsStopBtnEnabled}" />
                     </StackPanel>
                 </Grid>
             </TabItem>
-            <!--<TabItem Header="{x:Static res:Resources.MainFirstTabHeader}">
-                <Grid Margin="0,0,0,2" Background="#FFE5E5E5">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <DataGrid
-                        x:Name="FileDataView"
-                        Grid.RowSpan="3"
-                        Grid.ColumnSpan="2"
-                        Margin="0,0,0,40">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="1*"
-                                CanUserResize="False"
-                                CanUserSort="True"
-                                Header="#"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="5*"
-                                CanUserResize="True"
-                                CanUserSort="False"
-                                Header="{x:Static res:Resources.MainDataGridFilePath}"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn Width="2*" Header="{x:Static res:Resources.MainDataGridFileType}" />
-                            <DataGridTextColumn
-                                Width="2*"
-                                CanUserResize="False"
-                                CanUserSort="True"
-                                Header="{x:Static res:Resources.MainDataGridFileAddDate}"
-                                IsReadOnly="True" />
-                            <DataGridCheckBoxColumn Width="1*" Header="В БД?" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <StackPanel
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        VerticalAlignment="Bottom"
-                        Orientation="Horizontal">
-                        <Button
-                            x:Name="StartBtn"
-                            MinWidth="75"
-                            Margin="10,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Bottom"
-                            Command="{Binding Path=StartProgrammCommand}"
-                            Content="{x:Static res:Resources.MainStartBtnName}"
-                            IsEnabled="{Binding Path=DocumentAdderModel.IsStartBtnEnabled}" />
-                        <Button
-                            x:Name="StopBtn"
-                            MinWidth="75"
-                            Margin="10,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Bottom"
-                            Command="{Binding Path=StopProgrammCommand}"
-                            Content="{x:Static res:Resources.MainStopBtnName}"
-                            IsEnabled="{Binding Path=DocumentAdderModel.IsStopBtnEnabled}" />
-                    </StackPanel>
-                </Grid>
-            </TabItem>-->
             <TabItem Header="{x:Static res:Resources.MainSecondTabHeader}">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
@@ -194,7 +126,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="{x:Static res:Resources.MainThirdTabHeader}">
-                <TextBlock><Run Text="{x:Static res:Resources.AboutProgramDescription}" /></TextBlock>
+                <TextBlock Padding="10,5,10,5" FontSize="16"><Run Text="{x:Static res:Resources.AboutProgramDescription}" /></TextBlock>
             </TabItem>
         </TabControl>
 

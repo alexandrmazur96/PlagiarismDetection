@@ -10,29 +10,16 @@ namespace DocumentAdder.Helpers
 {
     public static class Extensions
     {
+        /// <summary>
+        /// Показывает, есть ли в локальном хранилище указанный путь.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="path">Путь.</param>
+        /// <returns></returns>
         public static bool LocalStorageContains(this System.Collections.ObjectModel.ObservableCollection<Types.RepositoryPath> input, string path)
         {
-            foreach (var item in input)
-            {
-                if (item.StorageType == Types.InternalStorageType.Directory && item.StoragePath == path)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public static bool RemoteStorageContains(this System.Collections.ObjectModel.ObservableCollection<Types.RepositoryPath> input, string path)
-        {
-            foreach (var item in input)
-            {
-                if (item.StorageType == Types.InternalStorageType.FTP && item.StoragePath == path)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+            return input.Any(item => item.StorageType == Types.InternalStorageType.Directory && item.StoragePath == path);
+        }        
 
         /// <summary>
         /// Удаляет все элементы, удовлетворяющие условию predicate
@@ -74,22 +61,7 @@ namespace DocumentAdder.Helpers
                 i++;
             }
             return tmpList;
-        }
-
-        /// <summary>
-        /// Выводит коллекцию List с указанным заголовком @listName
-        /// </summary>
-        /// <typeparam name="T">Generic type (любой тип C#)</typeparam>
-        /// <param name="list">Индексатор, позволяющий вызвать этот метод прямо на объекте List'а</param>
-        /// <param name="listName">Название заголовка, необязательный параметр.</param>
-        public static void ConsolePrintList<T>(this List<T> list, string listName = "LIST:")
-        {
-            Console.WriteLine("----------" + listName + "----------");
-            foreach (var item in list)
-            {
-                Console.WriteLine(item.ToString());
-            }
-        }
+        }        
 
         /// <summary>
         /// Показывает, находится ли слово в коллекции List_IdfItem.
