@@ -14,11 +14,9 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
     public class RepositorySettingViewModel
     {
         public static RepositorySettingModel RepositoryModel { get; private set; }
-        public static View.AddFTPRepositoryView AddFtpView { get; private set; }
 
         #region Commands
         public ICommand AddLocalStorageCommand { get; private set; }
-        public ICommand ShowFtpStorageCommand { get; private set; }
         #endregion
 
         #region Methods
@@ -48,12 +46,7 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
                     }
                 }
             }
-        }
-
-        public static View.AddFTPRepositoryView GetInstance()
-        {
-            return AddFtpView = new View.AddFTPRepositoryView();
-        }
+        }      
 
         #endregion
 
@@ -68,7 +61,6 @@ namespace DocumentAdder.ViewModel.SettingsViewModels
         public RepositorySettingViewModel()
         {
             AddLocalStorageCommand = new DelegateCommand(arg => AddLocalStorage());
-            ShowFtpStorageCommand = new DelegateCommand(arg => GetInstance().ShowDialog());
         }
     }
 }

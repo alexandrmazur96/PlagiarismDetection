@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{0D5C3D8C-24E1-4E7B-BD50-A8DA850AC7A5}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DocumentAdder</RootNamespace>
     <AssemblyName>DocumentAdder</AssemblyName>
@@ -174,7 +174,6 @@
     <Compile Include="Model\SettingsModels\DatabaseSettingModel.cs" />
     <Compile Include="Model\SettingsModels\OtherSettingModel.cs" />
     <Compile Include="Model\SettingsModels\RepositorySettingModel.cs" />
-    <Compile Include="Model\SettingsModels\ServerSettingModel.cs" />
     <Compile Include="Types\DocumentCollection.cs" />
     <Compile Include="Types\Exceptions\FileNameFormatException.cs" />
     <Compile Include="Types\FileActionType.cs" />
@@ -188,7 +187,6 @@
     <Compile Include="ViewModel\SettingsViewModels\DatabaseSettingViewModel.cs" />
     <Compile Include="ViewModel\SettingsViewModels\OtherSettingViewModel.cs" />
     <Compile Include="ViewModel\SettingsViewModels\RepositorySettingViewModel.cs" />
-    <Compile Include="ViewModel\SettingsViewModels\ServerSettingViewModel.cs" />
     <Compile Include="View\SettingsViews\DatabaseSettingsView.xaml.cs">
       <DependentUpon>DatabaseSettingsView.xaml</DependentUpon>
     </Compile>
@@ -198,13 +196,6 @@
     <Compile Include="View\SettingsViews\RepositorySettingsView.xaml.cs">
       <DependentUpon>RepositorySettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\SettingsViews\ServerWorkingSettingsView.xaml.cs">
-      <DependentUpon>ServerWorkingSettingsView.xaml</DependentUpon>
-    </Compile>
-    <Page Include="View\SettingsViews\AddFTPRepositoryView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -220,7 +211,6 @@
     <Compile Include="Helpers\PasswordBehavior.cs" />
     <Compile Include="Helpers\Transformation.cs" />
     <Compile Include="Helpers\Verifications.cs" />
-    <Compile Include="Model\AddFTPRepositoryModel.cs" />
     <Compile Include="Types\DataBase\DataBase.cs" />
     <Compile Include="Types\Document.cs" />
     <Compile Include="Types\InternalStorageType.cs" />
@@ -229,11 +219,7 @@
     <Compile Include="Model\MainModel.cs" />
     <Compile Include="Model\MainSettingModel.cs" />
     <Compile Include="Types\RepositoryPath.cs" />
-    <Compile Include="ViewModel\AddFTPRepositoryViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="View\SettingsViews\AddFTPRepositoryView.xaml.cs">
-      <DependentUpon>AddFTPRepositoryView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -247,10 +233,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\SettingsViews\RepositorySettingsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\SettingsViews\ServerWorkingSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

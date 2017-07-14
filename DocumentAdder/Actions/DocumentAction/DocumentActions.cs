@@ -272,14 +272,19 @@ namespace DocumentAdder.Actions.DocumentAction
             return filePaths;
         }
 
-        public static async Task<int> GetFileCountsAsync(ObservableCollection<RepositoryPath> collectionPath, string fileTypes)
+        /// <summary>
+        /// Получает количество файлов в папках переданных параметром collectionPath.
+        /// </summary>
+        /// <param name="collectionPath">Коллекция путей к файлам.</param>
+        /// <param name="fileTypes">Типы файлов.</param>
+        /// <returns></returns>
+        public static int GetFileCountsAsync(ObservableCollection<RepositoryPath> collectionPath, string fileTypes)
         {
             int filesCount = 0;
             foreach (var item in collectionPath)
             {
                 if (item.StorageType == InternalStorageType.Directory)
                 {
-                    //filesCount += new DirectoryInfo(item.StoragePath).GetFiles().Count();
                     filesCount += Directory.GetFiles(item.StoragePath, "*.*").Where(s =>
                     {
                         var extension = Path.GetExtension(s);
@@ -288,42 +293,7 @@ namespace DocumentAdder.Actions.DocumentAction
                 }
                 if (item.StorageType == InternalStorageType.FTP)
                 {
-                    try
-                    {
-                        var list = new List<string>();
-                        //Создаем новое подключение ftp по адресу, указаному в коллекции
-                        FtpWebRequest ftpReq = (FtpWebRequest)WebRequest.Create(item.StoragePath);
-
-                        //указываем не кешировать запрос
-                        ftpReq.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
-
-                        //выбираем команду для ftp, в данном случае - получить подробную информацию о содержимом
-                        ftpReq.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
-
-                        //задаем учетные данные для ftp (логин и пароль)
-                        ftpReq.Credentials = new NetworkCredential(item.FTPLogin, item.FTPPassword);
-
-                        //получаем ответ от ftp-сервера:
-                        using (var response = await ftpReq.GetResponseAsync())
-                        {
-                            using (var stream = response.GetResponseStream())
-                            {
-                                if (stream != null)
-                                    using (var reader = new StreamReader(stream, true))
-                                    {
-                                        while (!reader.EndOfStream)
-                                        {
-                                            list.Add(await reader.ReadLineAsync());
-                                        }
-                                    }
-                            }
-                        }
-                        filesCount += list.Count;
-                    }
-                    catch (Exception e)
-                    {
-                        System.Windows.MessageBox.Show(e.Source + "\n" + e.Message);
-                    }
+                    
                 }
             }
             return filesCount;

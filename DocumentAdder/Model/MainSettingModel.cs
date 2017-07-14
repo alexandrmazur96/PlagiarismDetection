@@ -45,7 +45,6 @@ namespace DocumentAdder.Model
         /// </summary>        
         private void PagesInit()
         {
-            _settingsPages.Add(new Pages("Приложение", new View.SettingsViews.ServerWorkingSettingsView()));
             _settingsPages.Add(new Pages("База данных", new View.SettingsViews.DatabaseSettingsView()));
             _settingsPages.Add(new Pages("Репозиторий", new View.SettingsViews.RepositorySettingsView()));
             _settingsPages.Add(new Pages("Другие", new View.SettingsViews.OtherSettingsView()));
